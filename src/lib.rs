@@ -1,5 +1,6 @@
-mod client;
+mod api_client;
 mod config;
+mod eth_client;
 mod signer;
 
 pub fn add(left: u64, right: u64) -> u64 {
