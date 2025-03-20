@@ -3,13 +3,13 @@ use alloy::providers::{Provider, ProviderBuilder};
 use reqwest::Url;
 use std::sync::Arc;
 
-pub struct Client {
+pub struct EthClient {
     config: Config,
     provider: Arc<dyn Provider>,
     // TODO: Add a signer
 }
 
-impl Client {
+impl EthClient {
     pub fn new(config: Config) -> Self {
         let rpc_url = Url::parse(&config.rpc_url).expect("Invalid RPC URL");
         Self {
