@@ -13,7 +13,7 @@ pub struct Client {
 
 impl Client {
     pub fn new(config: Config) -> Self {
-        let rpc_url = Url::parse(&config.rpc_url).unwrap();
+        let rpc_url = Url::parse(&config.rpc_url).expect("Invalid RPC URL");
         Self {
             config,
             http_client: Arc::new(HttpClient::new()),
