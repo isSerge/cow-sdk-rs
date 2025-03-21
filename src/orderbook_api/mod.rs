@@ -1,18 +1,21 @@
+mod url;
+
 use eyre::Error;
 use reqwest::Client as HttpClient;
-use reqwest::Url;
 use std::sync::Arc;
+use url::OrderApiUrl;
 
+#[derive(Debug)]
 pub struct OrderApiClient {
     client: Arc<HttpClient>,
-    url: Url,
+    api_url: OrderApiUrl,
 }
 
 impl OrderApiClient {
     pub fn new(url: &str) -> Result<Self, Error> {
-        let url = Url::parse(url).expect("Invalid RPC URL");
+        let api_url = OrderApiUrl::new(url);
         let client = Arc::new(HttpClient::new());
-        Ok(Self { client, url })
+        Ok(Self { client, api_url })
     }
 
     pub async fn get_orders(&self) -> Result<(), Error> {
