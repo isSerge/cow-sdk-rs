@@ -5,6 +5,7 @@ use std::sync::Arc;
 use alloy::primitives::TxHash;
 use eyre::Error;
 use reqwest::Client as HttpClient;
+use serde::de::DeserializeOwned;
 use url::OrderApiUrl;
 
 use crate::{
@@ -24,24 +25,27 @@ impl OrderApiClient {
         Ok(Self { client, api_url })
     }
 
+    /// Gets a resource from the orderbook API and parses it into the specified
+    /// type.
+    async fn get_and_parse<T: DeserializeOwned>(&self, url: &str) -> Result<T, Error> {
+        let response = self.client.get(url).send().await?;
+        let body = response.text().await?;
+        let json: T = parse_response(&body)?;
+        Ok(json)
+    }
+
     pub async fn get_orders(&self) -> Result<(), Error> {
         unimplemented!()
     }
 
     pub async fn get_order_by_id(&self, order_id: &OrderUid) -> Result<Order, Error> {
         let url = self.api_url.get_order_by_id(order_id.to_string().as_str());
-        let response = self.client.get(url).send().await?;
-        let body = response.text().await?;
-        let order: Order = parse_response(&body)?;
-        Ok(order)
+        self.get_and_parse(&url).await
     }
 
     pub async fn get_orders_by_tx_hash(&self, tx_hash: &TxHash) -> Result<Vec<Order>, Error> {
         let url = self.api_url.get_order_by_tx_hash(tx_hash.to_string().as_str());
-        let response = self.client.get(url).send().await?;
-        let body = response.text().await?;
-        let orders: Vec<Order> = parse_response(&body)?;
-        Ok(orders)
+        self.get_and_parse(&url).await
     }
 
     pub async fn get_order_status(&self, order_id: &str) -> Result<(), Error> {
