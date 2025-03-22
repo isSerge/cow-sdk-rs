@@ -22,7 +22,15 @@ impl OrderApiClient {
         unimplemented!()
     }
 
-    pub async fn get_order(&self, order_id: &str) -> Result<(), Error> {
+    pub async fn get_order_by_id(&self, order_id: &str) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_order_by_tx_hash(&self, tx_hash: &str) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_order_status(&self, order_id: &str) -> Result<(), Error> {
         unimplemented!()
     }
 
@@ -31,6 +39,10 @@ impl OrderApiClient {
     }
 
     pub async fn cancel_order(&self, order_id: &str) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_user_orders(&self, address: &str) -> Result<(), Error> {
         unimplemented!()
     }
 
@@ -50,7 +62,31 @@ impl OrderApiClient {
         unimplemented!()
     }
 
-    pub async fn get_trade(&self, trade_id: &str) -> Result<(), Error> {
+    pub async fn get_auction(&self) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_competition_by_id(&self, auction_id: &str) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_competition_by_tx_hash(&self, tx_hash: &str) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_latest_competition(&self) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_token_price(&self, token_address: &str) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_token_prices(&self) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_version(&self) -> Result<(), Error> {
         unimplemented!()
     }
 }
