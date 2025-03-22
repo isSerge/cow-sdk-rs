@@ -6,6 +6,8 @@ use eyre::Error;
 use reqwest::Client as HttpClient;
 use url::OrderApiUrl;
 
+use crate::config::Network;
+
 #[derive(Debug)]
 pub struct OrderApiClient {
     client: Arc<HttpClient>,
@@ -13,8 +15,8 @@ pub struct OrderApiClient {
 }
 
 impl OrderApiClient {
-    pub fn new(url: &str) -> Result<Self, Error> {
-        let api_url = OrderApiUrl::new(url);
+    pub fn new(network: Network) -> Result<Self, Error> {
+        let api_url = OrderApiUrl::new(network.api_url());
         let client = Arc::new(HttpClient::new());
         Ok(Self { client, api_url })
     }

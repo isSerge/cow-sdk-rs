@@ -1,8 +1,8 @@
 use serde_derive::{Deserialize, Serialize};
 
-mod network;
+pub mod network;
 
-use network::Network;
+pub use network::Network;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
