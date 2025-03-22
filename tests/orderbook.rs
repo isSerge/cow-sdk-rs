@@ -1,4 +1,4 @@
-use alloy::primitives::TxHash;
+use alloy::primitives::{Address, TxHash};
 use cow_sdk::{
     config::network::Network, order::CompetitionOrderStatus, orderbook_api::OrderApiClient,
     primitives::order_uid::OrderUid,
@@ -42,6 +42,19 @@ async fn test_get_order_status_by_id() -> Result<()> {
     let response = client.get_order_status(&order_id).await?;
 
     assert_eq!(response.r#type, CompetitionOrderStatus::Traded);
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_user_orders() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let address: Address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045".parse()?;
+
+    let response = client.get_user_orders(&address).await?;
+
+    assert_eq!(response.len(), 10);
 
     Ok(())
 }

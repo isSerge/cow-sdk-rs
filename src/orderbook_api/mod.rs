@@ -2,7 +2,7 @@ mod url;
 
 use std::sync::Arc;
 
-use alloy::primitives::TxHash;
+use alloy::primitives::{Address, TxHash};
 use eyre::Error;
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
@@ -70,8 +70,9 @@ impl OrderApiClient {
         unimplemented!()
     }
 
-    pub async fn get_user_orders(&self, address: &str) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_user_orders(&self, address: &Address) -> Result<Vec<Order>, Error> {
+        let url = self.api_url.get_user_orders(address.to_string().as_str());
+        self.get_and_parse(&url).await
     }
 
     pub async fn get_quote(&self) -> Result<(), Error> {
