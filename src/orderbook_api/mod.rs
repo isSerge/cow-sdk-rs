@@ -6,7 +6,7 @@ use eyre::Error;
 use reqwest::Client as HttpClient;
 use url::OrderApiUrl;
 
-use crate::config::Network;
+use crate::{config::Network, order::Order};
 
 #[derive(Debug)]
 pub struct OrderApiClient {
@@ -25,12 +25,18 @@ impl OrderApiClient {
         unimplemented!()
     }
 
-    pub async fn get_order_by_id(&self, order_id: &str) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_order_by_id(&self, order_id: &str) -> Result<Order, Error> {
+        let response = self.client.get(self.api_url.get_order_by_id(order_id)).send().await?;
+        let body = response.text().await?;
+        let json: Order = serde_json::from_str(&body)?;
+        Ok(json)
     }
 
-    pub async fn get_order_by_tx_hash(&self, tx_hash: &str) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_orders_by_tx_hash(&self, tx_hash: &str) -> Result<Vec<Order>, Error> {
+        let response = self.client.get(self.api_url.get_order_by_tx_hash(tx_hash)).send().await?;
+        let body = response.text().await?;
+        let json: Vec<Order> = serde_json::from_str(&body)?;
+        Ok(json)
     }
 
     pub async fn get_order_status(&self, order_id: &str) -> Result<(), Error> {
