@@ -5,12 +5,22 @@ use std::sync::Arc;
 use alloy::primitives::TxHash;
 use eyre::Error;
 use reqwest::Client as HttpClient;
-use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
+use serde_json::Value;
 use url::OrderApiUrl;
 
 use crate::{
-    config::Network, order::Order, parsing::parse_response, primitives::order_uid::OrderUid,
+    config::Network,
+    order::{CompetitionOrderStatus, Order},
+    parsing::parse_response,
+    primitives::order_uid::OrderUid,
 };
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CompetitionOrderStatusResponse {
+    pub r#type: CompetitionOrderStatus,
+    pub value: Value,
+}
 
 #[derive(Debug)]
 pub struct OrderApiClient {
@@ -34,10 +44,6 @@ impl OrderApiClient {
         Ok(json)
     }
 
-    pub async fn get_orders(&self) -> Result<(), Error> {
-        unimplemented!()
-    }
-
     pub async fn get_order_by_id(&self, order_id: &OrderUid) -> Result<Order, Error> {
         let url = self.api_url.get_order_by_id(order_id.to_string().as_str());
         self.get_and_parse(&url).await
@@ -48,8 +54,12 @@ impl OrderApiClient {
         self.get_and_parse(&url).await
     }
 
-    pub async fn get_order_status(&self, order_id: &str) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_order_status(
+        &self,
+        order_id: &OrderUid,
+    ) -> Result<CompetitionOrderStatusResponse, Error> {
+        let url = self.api_url.get_order_status(order_id.to_string().as_str());
+        self.get_and_parse(&url).await
     }
 
     pub async fn create_order(&self) -> Result<(), Error> {

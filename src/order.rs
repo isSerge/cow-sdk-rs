@@ -37,9 +37,31 @@ pub struct Order {
     pub settlement_contract: String,
     pub signature: String,
     pub signing_scheme: String,
-    pub status: String,
+    pub status: OrderStatus,
     pub uid: OrderUid,
     pub valid_to: u64,
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum CompetitionOrderStatus {
+    Cancelled,
+    Open,
+    Schedules,
+    Active,
+    Solved,
+    Executing,
+    Traded,
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub enum OrderStatus {
+    Fulfilled,
+    Expired,
+    Cancelled,
+    Open,
+    PresignaturePending,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
