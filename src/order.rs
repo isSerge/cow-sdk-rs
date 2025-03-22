@@ -1,48 +1,77 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Order {
-    buy_token: String,
-    sell_token: String,
-    buy_amount: String,
-    sell_amount: String,
-    receiver: String,
-    valid_to: String,
-    app_data: String,
-    fee_amount: String,
-    kind: String,
-    partial_fillable: bool,
-    sell_token_balance: String,
-    buy_token_balance: String,
-    signing_scheme: String,
-    signature: String,
-    from: String,
+    // basic order fields
+    pub app_data: String,
+    pub available_balance: Option<String>,
+    pub buy_amount: String,
+    pub buy_token: String,
+    pub buy_token_balance: String,
+    pub class: String,
+    pub creation_date: String, // TODO: change this to a DateTime type (e.g. chrono::DateTime)
+    pub executed_buy_amount: String,
+    pub executed_fee: String,
+    pub executed_fee_amount: String,
+    pub executed_fee_token: String,
+    pub executed_sell_amount: String,
+    pub executed_sell_amount_before_fees: String,
+    pub fee_amount: String,
+    pub full_app_data: String,
+    pub interactions: Interactions,
+    pub invalidated: bool,
+    pub is_liquidity_order: bool,
+    pub kind: String,
+    pub owner: String,
+    pub partially_fillable: bool,
+    pub quote: Option<Quote>,
+    pub receiver: String,
+    pub sell_amount: String,
+    pub sell_token: String,
+    pub sell_token_balance: String,
+    pub settlement_contract: String,
+    pub signature: String,
+    pub signing_scheme: String,
+    pub status: String,
+    pub uid: String,
+    pub valid_to: u64,
 }
 
-impl Default for Order {
-    fn default() -> Self {
-        Self::new()
-    }
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Interactions {
+    pub post: Vec<Interaction>,
+    pub pre: Vec<Interaction>,
 }
 
-impl Order {
-    pub fn new() -> Self {
-        Self {
-            buy_token: "".to_string(),
-            sell_token: "".to_string(),
-            buy_amount: "".to_string(),
-            sell_amount: "".to_string(),
-            receiver: "".to_string(),
-            valid_to: "".to_string(),
-            app_data: "".to_string(),
-            fee_amount: "".to_string(),
-            kind: "".to_string(),
-            partial_fillable: false,
-            sell_token_balance: "".to_string(),
-            buy_token_balance: "".to_string(),
-            signing_scheme: "".to_string(),
-            signature: "".to_string(),
-            from: "".to_string(),
-        }
-    }
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Interaction {
+    pub call_data: String,
+    pub target: String,
+    pub value: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Quote {
+    pub buy_amount: String,
+    pub gas_amount: String,
+    pub gas_price: String,
+    pub metadata: QuoteMetadata,
+    pub sell_amount: String,
+    pub sell_token_price: String,
+    pub solver: String,
+    pub verified: bool,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct QuoteMetadata {
+    pub interactions: Vec<Interaction>,
+    pub jit_orders: Vec<Value>, // if these are dynamic, you can use serde_json::Value
+    pub pre_interactions: Vec<Value>, // likewise here
+    pub version: String,
 }
