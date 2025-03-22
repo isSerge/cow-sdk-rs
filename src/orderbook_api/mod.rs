@@ -46,7 +46,15 @@ impl OrderApiClient {
     /// type.
     async fn get_and_parse<T: DeserializeOwned>(&self, url: &str) -> Result<T, Error> {
         let response = self.client.get(url).send().await?;
+        let status = response.status();
         let body = response.text().await?;
+
+        // If the status is not success, return an error.
+        if !status.is_success() {
+            return Err(eyre::eyre!("HTTP Error {}: {}", status, body));
+        }
+
+        println!("body: {}", body);
         let json: T = parse_response(&body)?;
         Ok(json)
     }
@@ -103,8 +111,11 @@ impl OrderApiClient {
         self.get_and_parse(&url).await
     }
 
+    /// Permissioned endpoint.
+    // TODO: get permission and implement struct
     pub async fn get_auction(&self) -> Result<(), Error> {
-        unimplemented!()
+        let url = self.api_url.get_auction();
+        self.get_and_parse(&url).await
     }
 
     pub async fn get_competition_by_id(&self, auction_id: &str) -> Result<(), Error> {
