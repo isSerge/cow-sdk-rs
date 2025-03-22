@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::primitives::order_uid::OrderUid;
+
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Order {
@@ -35,7 +37,7 @@ pub struct Order {
     pub signature: String,
     pub signing_scheme: String,
     pub status: String,
-    pub uid: String,
+    pub uid: OrderUid,
     pub valid_to: u64,
 }
 
