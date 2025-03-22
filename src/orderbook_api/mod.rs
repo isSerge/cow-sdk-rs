@@ -7,7 +7,9 @@ use eyre::Error;
 use reqwest::Client as HttpClient;
 use url::OrderApiUrl;
 
-use crate::{config::Network, order::Order, primitives::order_uid::OrderUid};
+use crate::{
+    config::Network, order::Order, parsing::parse_response, primitives::order_uid::OrderUid,
+};
 
 #[derive(Debug)]
 pub struct OrderApiClient {
@@ -27,25 +29,19 @@ impl OrderApiClient {
     }
 
     pub async fn get_order_by_id(&self, order_id: &OrderUid) -> Result<Order, Error> {
-        let response = self
-            .client
-            .get(self.api_url.get_order_by_id(order_id.to_string().as_str()))
-            .send()
-            .await?;
+        let url = self.api_url.get_order_by_id(order_id.to_string().as_str());
+        let response = self.client.get(url).send().await?;
         let body = response.text().await?;
-        let json: Order = serde_json::from_str(&body)?;
-        Ok(json)
+        let order: Order = parse_response(&body)?;
+        Ok(order)
     }
 
     pub async fn get_orders_by_tx_hash(&self, tx_hash: &TxHash) -> Result<Vec<Order>, Error> {
-        let response = self
-            .client
-            .get(self.api_url.get_order_by_tx_hash(tx_hash.to_string().as_str()))
-            .send()
-            .await?;
+        let url = self.api_url.get_order_by_tx_hash(tx_hash.to_string().as_str());
+        let response = self.client.get(url).send().await?;
         let body = response.text().await?;
-        let json: Vec<Order> = serde_json::from_str(&body)?;
-        Ok(json)
+        let orders: Vec<Order> = parse_response(&body)?;
+        Ok(orders)
     }
 
     pub async fn get_order_status(&self, order_id: &str) -> Result<(), Error> {
