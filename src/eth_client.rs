@@ -1,7 +1,9 @@
-use crate::config::Config;
+use std::sync::Arc;
+
 use alloy::providers::{Provider, ProviderBuilder};
 use reqwest::Url;
-use std::sync::Arc;
+
+use crate::config::Config;
 
 pub struct EthClient {
     config: Config,
@@ -12,9 +14,6 @@ pub struct EthClient {
 impl EthClient {
     pub fn new(config: Config) -> Self {
         let rpc_url = Url::parse(&config.rpc_url).expect("Invalid RPC URL");
-        Self {
-            config,
-            provider: Arc::new(ProviderBuilder::new().on_http(rpc_url)),
-        }
+        Self { config, provider: Arc::new(ProviderBuilder::new().on_http(rpc_url)) }
     }
 }

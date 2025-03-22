@@ -5,9 +5,7 @@ pub struct OrderApiUrl {
 
 impl OrderApiUrl {
     pub fn new(base_url: &str) -> Self {
-        Self {
-            base_url: base_url.to_string(),
-        }
+        Self { base_url: base_url.to_string() }
     }
 
     fn orders(&self) -> String {
@@ -39,10 +37,7 @@ impl OrderApiUrl {
     }
 
     fn get_native_price(&self, token_address: &str) -> String {
-        format!(
-            "{}//api/v1/token/{}/native_price",
-            self.base_url, token_address
-        )
+        format!("{}//api/v1/token/{}/native_price", self.base_url, token_address)
     }
 
     fn quote(&self) -> String {
@@ -50,17 +45,11 @@ impl OrderApiUrl {
     }
 
     fn get_solver_competition_by_id(&self, auction_id: &str) -> String {
-        format!(
-            "{}//api/v1/solver_competition/{}",
-            self.base_url, auction_id
-        )
+        format!("{}//api/v1/solver_competition/{}", self.base_url, auction_id)
     }
 
     fn get_solver_competition_by_tx_hash(&self, tx_hash: &str) -> String {
-        format!(
-            "{}//api/v1/solver_competition/by_tx_hash/{}",
-            self.base_url, tx_hash
-        )
+        format!("{}//api/v1/solver_competition/by_tx_hash/{}", self.base_url, tx_hash)
     }
 
     fn get_solver_competition_latest(&self) -> String {

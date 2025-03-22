@@ -1,8 +1,9 @@
 mod url;
 
+use std::sync::Arc;
+
 use eyre::Error;
 use reqwest::Client as HttpClient;
-use std::sync::Arc;
 use url::OrderApiUrl;
 
 #[derive(Debug)]
