@@ -3,7 +3,7 @@ mod url;
 use std::sync::Arc;
 
 use alloy::primitives::{Address, TxHash};
-use eyre::Error;
+use eyre::{Error, Result};
 use reqwest::Client as HttpClient;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::Value;
@@ -14,6 +14,7 @@ use crate::{
     order::{CompetitionOrderStatus, Order},
     parsing::parse_response,
     primitives::order_uid::OrderUid,
+    trade::Trade,
 };
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -26,6 +27,12 @@ pub struct CompetitionOrderStatusResponse {
 pub struct OrderApiClient {
     client: Arc<HttpClient>,
     api_url: OrderApiUrl,
+}
+
+#[derive(Debug)]
+pub enum GetTradesQuery {
+    ByOwner(Address),
+    ByOrderId(OrderUid),
 }
 
 impl OrderApiClient {
@@ -87,8 +94,13 @@ impl OrderApiClient {
         unimplemented!()
     }
 
-    pub async fn get_trades(&self) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_trades(&self, query: GetTradesQuery) -> Result<Vec<Trade>, Error> {
+        let trades_url = self.api_url.get_trades();
+        let url = match query {
+            GetTradesQuery::ByOwner(owner) => format!("{}?owner={}", trades_url, owner),
+            GetTradesQuery::ByOrderId(order_id) => format!("{}?orderUid={}", trades_url, order_id),
+        };
+        self.get_and_parse(&url).await
     }
 
     pub async fn get_auction(&self) -> Result<(), Error> {

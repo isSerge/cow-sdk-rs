@@ -7,7 +7,6 @@ use crate::primitives::order_uid::OrderUid;
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Order {
-    // basic order fields
     pub app_data: String,
     pub available_balance: Option<String>,
     pub buy_amount: U256,

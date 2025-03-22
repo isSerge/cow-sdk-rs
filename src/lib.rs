@@ -5,3 +5,4 @@ pub mod orderbook_api;
 mod parsing;
 pub mod primitives;
 pub mod signer;
+pub mod trade;

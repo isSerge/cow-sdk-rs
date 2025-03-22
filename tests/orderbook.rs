@@ -1,9 +1,12 @@
 use alloy::primitives::{Address, TxHash};
 use cow_sdk::{
-    config::network::Network, order::CompetitionOrderStatus, orderbook_api::OrderApiClient,
+    config::network::Network,
+    order::CompetitionOrderStatus,
+    orderbook_api::{GetTradesQuery, OrderApiClient},
     primitives::order_uid::OrderUid,
 };
 use eyre::Result;
+
 const ORDER_ID: &str = "0xeaef82ff8696bff255e130b266231acb53a8f02823ed89b33acda5fd3987a53ad8da6bf26964af9d7eed9e03e53415d37aa96045676d56da";
 
 #[tokio::test]
@@ -55,6 +58,33 @@ async fn test_get_user_orders() -> Result<()> {
     let response = client.get_user_orders(&address).await?;
 
     assert_eq!(response.len(), 10);
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_trades_by_owner() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let address: Address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045".parse()?;
+
+    let trades = client.get_trades(GetTradesQuery::ByOwner(address)).await?;
+
+    assert_eq!(trades.len(), 36);
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_trades_by_order_id() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let order_id: OrderUid = ORDER_ID.parse()?;
+
+    let trades = client.get_trades(GetTradesQuery::ByOrderId(order_id)).await?;
+
+    assert_eq!(trades.len(), 1);
+    assert_eq!(trades[0].order_uid, order_id);
 
     Ok(())
 }
