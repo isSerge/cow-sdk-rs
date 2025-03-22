@@ -88,3 +88,16 @@ async fn test_get_trades_by_order_id() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+#[ignore]
+async fn test_get_token_price() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let token_address: Address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48".parse()?;
+
+    let response = client.get_token_price(&token_address).await?;
+
+    assert!(response.price > 0.0);
+
+    Ok(())
+}

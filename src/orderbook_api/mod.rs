@@ -23,6 +23,11 @@ pub struct CompetitionOrderStatusResponse {
     pub value: Value,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct TokenPriceResponse {
+    pub price: f64,
+}
+
 #[derive(Debug)]
 pub struct OrderApiClient {
     client: Arc<HttpClient>,
@@ -130,8 +135,12 @@ impl OrderApiClient {
         unimplemented!()
     }
 
-    pub async fn get_token_price(&self, token_address: &str) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_token_price(
+        &self,
+        token_address: &Address,
+    ) -> Result<TokenPriceResponse, Error> {
+        let url = self.api_url.get_native_price(token_address.to_string().as_str());
+        self.get_and_parse(&url).await
     }
 
     pub async fn get_token_prices(&self) -> Result<(), Error> {
