@@ -4,7 +4,7 @@ use alloy::{
 };
 use eyre::{Error, Result};
 
-struct Signer {
+pub struct Signer {
     address: Address,
     signer: PrivateKeySigner,
 }

@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
-struct Order {
+pub struct Order {
     buy_token: String,
     sell_token: String,
     buy_amount: String,
@@ -17,6 +17,12 @@ struct Order {
     signing_scheme: String,
     signature: String,
     from: String,
+}
+
+impl Default for Order {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl Order {
