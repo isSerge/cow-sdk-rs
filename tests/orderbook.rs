@@ -115,3 +115,16 @@ async fn test_get_competition_by_tx_hash() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+// #[ignore]
+async fn test_get_latest_competition() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+
+    let response = client.get_latest_competition().await;
+
+    // TODO: add assertions
+    assert!(response.is_ok());
+
+    Ok(())
+}

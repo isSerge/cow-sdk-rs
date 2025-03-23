@@ -125,8 +125,9 @@ impl OrderApiClient {
         self.get_and_parse(&url).await
     }
 
-    pub async fn get_latest_competition(&self) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_latest_competition(&self) -> Result<SolverCompetitionResponse, Error> {
+        let url = self.api_url.get_solver_competition_latest();
+        self.get_and_parse(&url).await
     }
 
     pub async fn get_token_price(
