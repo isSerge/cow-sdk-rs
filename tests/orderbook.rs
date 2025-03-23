@@ -1,13 +1,14 @@
 use alloy::primitives::{Address, TxHash};
 use cow_sdk::{
     config::network::Network,
-    order::CompetitionOrderStatus,
+    models::order::CompetitionOrderStatus,
     orderbook_api::{GetTradesQuery, OrderApiClient},
     primitives::order_uid::OrderUid,
 };
 use eyre::Result;
 
 const ORDER_ID: &str = "0xeaef82ff8696bff255e130b266231acb53a8f02823ed89b33acda5fd3987a53ad8da6bf26964af9d7eed9e03e53415d37aa96045676d56da";
+const TX_HASH: &str = "0xffd92faa1419c59ff0ac7f090998e9159f4b7f28bf67ad6b061c728c0da265f2";
 
 #[tokio::test]
 #[ignore]
@@ -25,8 +26,7 @@ async fn test_get_order_by_id() -> Result<()> {
 #[ignore]
 async fn test_get_order_by_tx_hash() -> Result<()> {
     let client = OrderApiClient::new(Network::Mainnet)?;
-    let tx_hash_str = "0xffd92faa1419c59ff0ac7f090998e9159f4b7f28bf67ad6b061c728c0da265f2";
-    let tx_hash: TxHash = tx_hash_str.parse()?;
+    let tx_hash: TxHash = TX_HASH.parse()?;
 
     let orders = client.get_orders_by_tx_hash(&tx_hash).await?;
 
@@ -98,6 +98,20 @@ async fn test_get_token_price() -> Result<()> {
     let response = client.get_token_price(&token_address).await?;
 
     assert!(response.price > 0.0);
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_competition_by_tx_hash() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let tx_hash: TxHash = TX_HASH.parse()?;
+
+    let response = client.get_competition_by_tx_hash(&tx_hash).await?;
+
+    assert_eq!(response.transaction_hashes.len(), 1);
+    assert_eq!(response.transaction_hashes[0], tx_hash);
 
     Ok(())
 }

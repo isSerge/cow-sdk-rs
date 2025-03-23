@@ -5,28 +5,19 @@ use std::sync::Arc;
 use alloy::primitives::{Address, TxHash};
 use eyre::{Error, Result};
 use reqwest::Client as HttpClient;
-use serde::{Deserialize, Serialize, de::DeserializeOwned};
-use serde_json::Value;
+use serde::de::DeserializeOwned;
 use url::OrderApiUrl;
 
 use crate::{
     config::Network,
-    order::{CompetitionOrderStatus, Order},
+    models::{
+        order::Order,
+        response::{CompetitionOrderStatusResponse, SolverCompetitionResponse, TokenPriceResponse},
+        trade::Trade,
+    },
     parsing::parse_response,
     primitives::order_uid::OrderUid,
-    trade::Trade,
 };
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct CompetitionOrderStatusResponse {
-    pub r#type: CompetitionOrderStatus,
-    pub value: Value,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct TokenPriceResponse {
-    pub price: f64,
-}
 
 #[derive(Debug)]
 pub struct OrderApiClient {
@@ -59,7 +50,6 @@ impl OrderApiClient {
             return Err(eyre::eyre!("HTTP Error {}: {}", status, body));
         }
 
-        println!("body: {}", body);
         let json: T = parse_response(&body)?;
         Ok(json)
     }
@@ -127,8 +117,12 @@ impl OrderApiClient {
         unimplemented!()
     }
 
-    pub async fn get_competition_by_tx_hash(&self, tx_hash: &str) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_competition_by_tx_hash(
+        &self,
+        tx_hash: &TxHash,
+    ) -> Result<SolverCompetitionResponse, Error> {
+        let url = self.api_url.get_solver_competition_by_tx_hash(tx_hash.to_string().as_str());
+        self.get_and_parse(&url).await
     }
 
     pub async fn get_latest_competition(&self) -> Result<(), Error> {
