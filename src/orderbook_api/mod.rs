@@ -96,14 +96,6 @@ impl OrderApiClient {
         unimplemented!()
     }
 
-    pub async fn get_allowance(&self, token_address: &str, spender: &str) -> Result<(), Error> {
-        unimplemented!()
-    }
-
-    pub async fn set_allowance(&self, token_address: &str, spender: &str) -> Result<(), Error> {
-        unimplemented!()
-    }
-
     pub async fn get_trades(&self, query: GetTradesQuery) -> Result<Vec<Trade>, Error> {
         let trades_url = self.api_url.get_trades();
         let url = match query {
@@ -169,5 +161,21 @@ impl OrderApiClient {
         let url = self.api_url.get_api_version();
         let body = self.get_response_body(&url).await?;
         Ok(body)
+    }
+
+    pub async fn get_total_surplus(&self) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_total_volume(&self) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn get_app_data(&self) -> Result<(), Error> {
+        unimplemented!()
+    }
+
+    pub async fn upload_app_data(&self) -> Result<(), Error> {
+        unimplemented!()
     }
 }
