@@ -131,6 +131,19 @@ async fn test_get_latest_competition() -> Result<()> {
 
 #[tokio::test]
 #[ignore]
+async fn test_get_competition_by_id() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let auction_id = 1;
+
+    let response = client.get_competition_by_id(&auction_id).await?;
+
+    assert_eq!(response.auction_id, auction_id);
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
 async fn test_get_api_version() -> Result<()> {
     let client = OrderApiClient::new(Network::Mainnet)?;
 

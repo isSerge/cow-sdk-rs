@@ -124,8 +124,14 @@ impl OrderApiClient {
         Ok(json)
     }
 
-    pub async fn get_competition_by_id(&self, auction_id: &str) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_competition_by_id(
+        &self,
+        auction_id: &i64,
+    ) -> Result<SolverCompetitionResponse, Error> {
+        let url = self.api_url.get_solver_competition_by_id(auction_id.to_string().as_str());
+        let body = self.get_response_body(&url).await?;
+        let json: SolverCompetitionResponse = parse_response(&body)?;
+        Ok(json)
     }
 
     pub async fn get_competition_by_tx_hash(
