@@ -12,7 +12,10 @@ use crate::{
     config::Network,
     models::{
         order::Order,
-        response::{CompetitionOrderStatusResponse, SolverCompetitionResponse, TokenPriceResponse},
+        response::{
+            CompetitionOrderStatusResponse, SolverCompetitionResponse, TokenPriceResponse,
+            TotalSurplusResponse,
+        },
         trade::Trade,
     },
     parsing::parse_response,
@@ -153,18 +156,20 @@ impl OrderApiClient {
         Ok(json)
     }
 
-    pub async fn get_token_prices(&self) -> Result<(), Error> {
-        unimplemented!()
-    }
-
     pub async fn get_version(&self) -> Result<String, Error> {
         let url = self.api_url.get_api_version();
         let body = self.get_response_body(&url).await?;
         Ok(body)
     }
 
-    pub async fn get_total_surplus(&self) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_total_surplus(
+        &self,
+        address: &Address,
+    ) -> Result<TotalSurplusResponse, Error> {
+        let url = self.api_url.get_user_surplus(address.to_string().as_str());
+        let body = self.get_response_body(&url).await?;
+        let json: TotalSurplusResponse = parse_response(&body)?;
+        Ok(json)
     }
 
     pub async fn get_total_volume(&self) -> Result<(), Error> {

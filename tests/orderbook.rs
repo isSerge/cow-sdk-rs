@@ -1,4 +1,4 @@
-use alloy::primitives::{Address, TxHash};
+use alloy::primitives::{Address, TxHash, U256};
 use cow_sdk::{
     config::network::Network,
     models::order::CompetitionOrderStatus,
@@ -150,6 +150,19 @@ async fn test_get_api_version() -> Result<()> {
     let response = client.get_version().await;
 
     assert!(response.is_ok());
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_total_surplus() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let address: Address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045".parse()?;
+
+    let response = client.get_total_surplus(&address).await?;
+
+    assert!(response.total_surplus > U256::from(0));
 
     Ok(())
 }

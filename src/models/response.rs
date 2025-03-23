@@ -27,3 +27,9 @@ pub struct SolverCompetitionResponse {
     pub auction: Option<Value>,        // TODO: add a type for this
     pub solutions: Option<Vec<Value>>, // TODO: add a type for this
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TotalSurplusResponse {
+    pub total_surplus: U256,
+}
