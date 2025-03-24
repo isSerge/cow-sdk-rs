@@ -68,7 +68,7 @@ async fn test_get_trades_by_owner() -> Result<()> {
     let client = OrderApiClient::new(Network::Mainnet)?;
     let address: Address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045".parse()?;
 
-    let trades = client.get_trades(GetTradesQuery::ByOwner(address)).await?;
+    let trades = client.get_trades(&GetTradesQuery::ByOwner(address)).await?;
 
     assert_eq!(trades.len(), 36);
 
@@ -81,7 +81,7 @@ async fn test_get_trades_by_order_id() -> Result<()> {
     let client = OrderApiClient::new(Network::Mainnet)?;
     let order_id: OrderUid = ORDER_ID.parse()?;
 
-    let trades = client.get_trades(GetTradesQuery::ByOrderId(order_id)).await?;
+    let trades = client.get_trades(&GetTradesQuery::ByOrderId(order_id)).await?;
 
     assert_eq!(trades.len(), 1);
     assert_eq!(trades[0].order_uid, order_id);

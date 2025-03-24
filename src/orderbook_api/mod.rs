@@ -98,12 +98,8 @@ impl OrderApiClient {
         unimplemented!()
     }
 
-    pub async fn get_trades(&self, query: GetTradesQuery) -> Result<Vec<Trade>, Error> {
-        let trades_url = self.api_url.get_trades();
-        let url = match query {
-            GetTradesQuery::ByOwner(owner) => format!("{}?owner={}", trades_url, owner),
-            GetTradesQuery::ByOrderId(order_id) => format!("{}?orderUid={}", trades_url, order_id),
-        };
+    pub async fn get_trades(&self, query: &GetTradesQuery) -> Result<Vec<Trade>, Error> {
+        let url = self.api_url.get_trades(query);
         let body = self.get_response_body(&url).await?;
         let json: Vec<Trade> = parse_response(&body)?;
         Ok(json)
