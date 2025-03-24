@@ -19,7 +19,7 @@ pub struct OrderApiUrl {
 
 impl OrderApiUrl {
     pub fn new(base_url: &str) -> Self {
-        let base_url = Url::parse(base_url).unwrap();
+        let base_url = Url::parse(base_url).expect("Invalid base URL");
         Self { base_url }
     }
 
@@ -42,19 +42,22 @@ impl OrderApiUrl {
     }
 
     pub fn orders(&self) -> String {
-        self.build::<()>("/api/v1/orders", None).unwrap()
+        self.build::<()>("/api/v1/orders", None).expect("Failed to build URL")
     }
 
     pub fn get_order_by_id(&self, order_id: &str) -> String {
-        self.build::<()>(&format!("/api/v1/orders/{}", order_id), None).unwrap()
+        self.build::<()>(&format!("/api/v1/orders/{}", order_id), None)
+            .expect("Failed to build URL")
     }
 
     pub fn get_order_status(&self, order_id: &str) -> String {
-        self.build::<()>(&format!("/api/v1/orders/{}/status", order_id), None).unwrap()
+        self.build::<()>(&format!("/api/v1/orders/{}/status", order_id), None)
+            .expect("Failed to build URL")
     }
 
     pub fn get_order_by_tx_hash(&self, tx_hash: &str) -> String {
-        self.build::<()>(&format!("/api/v1/transactions/{}/orders", tx_hash), None).unwrap()
+        self.build::<()>(&format!("/api/v1/transactions/{}/orders", tx_hash), None)
+            .expect("Failed to build URL")
     }
 
     pub fn get_trades(&self, query: &GetTradesQuery) -> String {
@@ -65,47 +68,52 @@ impl OrderApiUrl {
                 TradesQueryParams { owner: None, order_uid: Some(order_id.to_string()) },
         };
 
-        self.build("/api/v1/trades", Some(&params)).unwrap()
+        self.build("/api/v1/trades", Some(&params)).expect("Failed to build URL")
     }
 
     pub fn get_auction(&self) -> String {
-        self.build::<()>("/api/v1/auction", None).unwrap()
+        self.build::<()>("/api/v1/auction", None).expect("Failed to build URL")
     }
 
     pub fn get_user_orders(&self, account: &str) -> String {
-        self.build::<()>(&format!("/api/v1/account/{account}/orders"), None).unwrap()
+        self.build::<()>(&format!("/api/v1/account/{account}/orders"), None)
+            .expect("Failed to build URL")
     }
 
     pub fn get_native_price(&self, token_address: &str) -> String {
-        self.build::<()>(&format!("/api/v1/token/{}/native_price", token_address), None).unwrap()
+        self.build::<()>(&format!("/api/v1/token/{}/native_price", token_address), None)
+            .expect("Failed to build URL")
     }
 
     pub fn quote(&self) -> String {
-        self.build::<()>("/api/v1/quote", None).unwrap()
+        self.build::<()>("/api/v1/quote", None).expect("Failed to build URL")
     }
 
     pub fn get_solver_competition_by_id(&self, auction_id: &str) -> String {
-        self.build::<()>(&format!("/api/v1/solver_competition/{}", auction_id), None).unwrap()
+        self.build::<()>(&format!("/api/v1/solver_competition/{}", auction_id), None)
+            .expect("Failed to build URL")
     }
 
     pub fn get_solver_competition_by_tx_hash(&self, tx_hash: &str) -> String {
         self.build::<()>(&format!("/api/v1/solver_competition/by_tx_hash/{}", tx_hash), None)
-            .unwrap()
+            .expect("Failed to build URL")
     }
 
     pub fn get_solver_competition_latest(&self) -> String {
-        self.build::<()>("/api/v1/solver_competition/latest", None).unwrap()
+        self.build::<()>("/api/v1/solver_competition/latest", None).expect("Failed to build URL")
     }
 
     pub fn get_api_version(&self) -> String {
-        self.build::<()>("/api/v1/version", None).unwrap()
+        self.build::<()>("/api/v1/version", None).expect("Failed to build URL")
     }
 
     pub fn app_data_by_hash(&self, app_data_hash: &str) -> String {
-        self.build::<()>(&format!("/api/v1/app_data/{}", app_data_hash), None).unwrap()
+        self.build::<()>(&format!("/api/v1/app_data/{}", app_data_hash), None)
+            .expect("Failed to build URL")
     }
 
     pub fn get_user_surplus(&self, account: &str) -> String {
-        self.build::<()>(&format!("/api/v1/users/{}/total_surplus", account), None).unwrap()
+        self.build::<()>(&format!("/api/v1/users/{}/total_surplus", account), None)
+            .expect("Failed to build URL")
     }
 }
