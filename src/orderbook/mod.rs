@@ -82,11 +82,29 @@ impl OrderApiClient {
         Ok(json)
     }
 
-    pub async fn create_order(&self) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn create_order(&self, order: &Order) -> Result<reqwest::StatusCode, Error> {
+        let url = self.api_url.orders()?;
+        let body = serde_json::to_string(order).wrap_err("Failed to serialize order")?;
+
+        let response = self
+            .client
+            .post(url)
+            .body(body)
+            .send()
+            .await
+            .wrap_err("Failed to send POST request to URL: {url}")?;
+
+        let status = response.status();
+        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
+
+        if !status.is_success() {
+            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
+        }
+
+        Ok(status)
     }
 
-    pub async fn cancel_order(&self, order_id: &str) -> Result<(), Error> {
+    pub async fn cancel_order(&self, order_id: &OrderUid) -> Result<(), Error> {
         unimplemented!()
     }
 

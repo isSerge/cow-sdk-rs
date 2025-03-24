@@ -1,7 +1,7 @@
 use alloy::primitives::{Address, TxHash, U256};
 use cow_sdk::{
     config::network::Network,
-    models::order::CompetitionOrderStatus,
+    models::order::{CompetitionOrderStatus, Interactions, Order, OrderStatus},
     orderbook::{GetTradesQuery, OrderApiClient},
     primitives::{app_data::AppDataHash, order_uid::OrderUid},
 };
@@ -180,3 +180,55 @@ async fn test_get_app_data() -> Result<()> {
 
     Ok(())
 }
+
+#[tokio::test]
+#[ignore]
+async fn test_create_order_with_invalid_order() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet);
+    let order = Order {
+        app_data: "0x".to_string(),
+        available_balance: None,
+        buy_amount: U256::default(),
+        buy_token: Address::default(),
+        buy_token_balance: "erc20".to_string(),
+        class: "limit".to_string(),
+        creation_date: "2025-03-16T00:00:00Z".to_string(),
+        executed_buy_amount: U256::default(),
+        executed_fee: U256::default(),
+        executed_fee_amount: U256::default(),
+        executed_fee_token: U256::default(),
+        executed_sell_amount: U256::default(),
+        executed_sell_amount_before_fees: U256::default(),
+        fee_amount: U256::default(),
+        full_app_data: "{}".to_string(),
+        interactions: Interactions { post: vec![], pre: vec![] },
+        invalidated: false,
+        is_liquidity_order: false,
+        kind: "sell".to_string(),
+        owner: Address::default(),
+        partially_fillable: false,
+        quote: None,
+        receiver: Address::default(),
+        sell_amount: U256::default(),
+        sell_token: Address::default(),
+        sell_token_balance: "erc20".to_string(),
+        settlement_contract: "0x0000000000000000000000000000000000000000".to_string(),
+        signature: "0x".to_string(),
+        signing_scheme: "eip712".to_string(),
+        status: OrderStatus::Open,
+        uid: ORDER_ID.parse()?,
+        valid_to: 0,
+    };
+
+    let response = client.create_order(&order).await;
+
+    assert!(response.is_err(), "Expected create_order to fail when given an invalid order");
+
+    if let Err(err) = response {
+        assert!(err.to_string().contains("HTTP Error 400"));
+    }
+
+    Ok(())
+}
+
+// TODO: test create order with valid order using mocked API
