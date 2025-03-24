@@ -8,7 +8,7 @@ use crate::primitives::order_uid::OrderUid;
 #[serde(rename_all = "camelCase")]
 pub struct Order {
     pub app_data: String,
-    pub available_balance: Option<String>,
+    pub available_balance: Option<U256>,
     pub buy_amount: U256,
     pub buy_token: Address,
     pub buy_token_balance: String,

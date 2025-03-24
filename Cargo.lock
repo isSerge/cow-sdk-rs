@@ -1044,9 +1044,9 @@ dependencies = [
  "reqwest",
  "secp256k1",
  "serde",
- "serde_derive",
  "serde_json",
  "serde_urlencoded",
+ "serde_with",
  "tokio",
  "url",
 ]

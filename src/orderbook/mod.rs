@@ -41,10 +41,10 @@ pub struct OrderCancellations {
 }
 
 impl OrderApiClient {
-    pub fn new(network: Network) -> Self {
-        let api_url = OrderApiUrl::new(network.api_url());
+    pub fn new(network: Network) -> Result<Self> {
+        let api_url = OrderApiUrl::new(network.api_url())?;
         let client = HttpClient::new();
-        Self { client, api_url }
+        Ok(Self { client, api_url })
     }
 
     /// Gets a resource from the orderbook API and returns the body as a string.
@@ -97,6 +97,7 @@ impl OrderApiClient {
         let response = self
             .client
             .post(url)
+            .header("Content-Type", "application/json")
             .body(body)
             .send()
             .await
@@ -124,6 +125,7 @@ impl OrderApiClient {
         let response = self
             .client
             .delete(url)
+            .header("Content-Type", "application/json")
             .body(body)
             .send()
             .await

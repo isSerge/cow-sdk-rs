@@ -13,7 +13,7 @@ const TX_HASH: &str = "0xffd92faa1419c59ff0ac7f090998e9159f4b7f28bf67ad6b061c728
 #[tokio::test]
 #[ignore]
 async fn test_get_order_by_id() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let order_id: OrderUid = ORDER_ID.parse()?;
     let order = client.get_order_by_id(&order_id).await?;
 
@@ -25,7 +25,7 @@ async fn test_get_order_by_id() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_order_by_tx_hash() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let tx_hash: TxHash = TX_HASH.parse()?;
 
     let orders = client.get_orders_by_tx_hash(&tx_hash).await?;
@@ -39,7 +39,7 @@ async fn test_get_order_by_tx_hash() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_order_status_by_id() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let order_id: OrderUid = ORDER_ID.parse()?;
 
     let response = client.get_order_status(&order_id).await?;
@@ -52,7 +52,7 @@ async fn test_get_order_status_by_id() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_user_orders() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let address: Address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045".parse()?;
 
     let response = client.get_user_orders(&address).await?;
@@ -65,7 +65,7 @@ async fn test_get_user_orders() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_trades_by_owner() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let address: Address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045".parse()?;
 
     let trades = client.get_trades(&GetTradesQuery::ByOwner(address)).await?;
@@ -78,7 +78,7 @@ async fn test_get_trades_by_owner() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_trades_by_order_id() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let order_id: OrderUid = ORDER_ID.parse()?;
 
     let trades = client.get_trades(&GetTradesQuery::ByOrderId(order_id)).await?;
@@ -92,7 +92,7 @@ async fn test_get_trades_by_order_id() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_token_price() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let token_address: Address = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48".parse()?;
 
     let response = client.get_token_price(&token_address).await?;
@@ -105,7 +105,7 @@ async fn test_get_token_price() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_competition_by_tx_hash() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let tx_hash: TxHash = TX_HASH.parse()?;
 
     let response = client.get_competition_by_tx_hash(&tx_hash).await?;
@@ -119,7 +119,7 @@ async fn test_get_competition_by_tx_hash() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_latest_competition() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
 
     let response = client.get_latest_competition().await;
 
@@ -132,7 +132,7 @@ async fn test_get_latest_competition() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_competition_by_id() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let auction_id = 1;
 
     let response = client.get_competition_by_id(&auction_id).await?;
@@ -145,7 +145,7 @@ async fn test_get_competition_by_id() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_api_version() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
 
     let response = client.get_version().await;
 
@@ -157,7 +157,7 @@ async fn test_get_api_version() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_total_surplus() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let address: Address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045".parse()?;
 
     let response = client.get_total_surplus(&address).await?;
@@ -170,7 +170,7 @@ async fn test_get_total_surplus() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_get_app_data() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let app_data_hash: AppDataHash =
         "0x00e421be3c3b0e20c582c0d803018c418b56ea61add1811bec2509e003a17b42".parse()?;
 
@@ -184,7 +184,7 @@ async fn test_get_app_data() -> Result<()> {
 #[tokio::test]
 #[ignore]
 async fn test_create_order_with_invalid_order() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let order = Order {
         app_data: "0x".to_string(),
         available_balance: None,
@@ -236,7 +236,7 @@ async fn test_create_order_with_invalid_order() -> Result<()> {
 #[tokio::test]
 // #[ignore]
 async fn test_cancel_order() -> Result<()> {
-    let client = OrderApiClient::new(Network::Mainnet);
+    let client = OrderApiClient::new(Network::Mainnet)?;
     let order_ids: Vec<OrderUid> = vec![ORDER_ID.parse()?];
     let cancellations = OrderCancellations {
         order_ids,

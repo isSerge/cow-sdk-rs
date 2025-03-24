@@ -1,5 +1,7 @@
 use std::{fmt, str};
 
+use serde::{Deserialize, Serialize};
+
 // Orderbook API URLs
 const MAINNET_PROD_API_URL: &str = "https://api.cow.fi/mainnet";
 const MAINNET_STAGING_API_URL: &str = "https://barn.api.cow.fi/mainnet";
@@ -21,7 +23,8 @@ const ARBITRUM_RPC_URL: &str = "https://arbitrum.infura.io/v3/";
 const GNOSIS_RPC_URL: &str = "https://xdai.infura.io/v3/";
 const LOCAL_RPC_URL: &str = "http://localhost:8545";
 
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+#[non_exhaustive]
 pub enum Network {
     #[default]
     Mainnet,
@@ -38,7 +41,7 @@ pub enum Network {
 }
 
 impl Network {
-    pub fn api_url(&self) -> &str {
+    pub const fn api_url(&self) -> &'static str {
         match self {
             Network::Mainnet => MAINNET_PROD_API_URL,
             Network::MainnetStaging => MAINNET_STAGING_API_URL,
@@ -54,7 +57,7 @@ impl Network {
         }
     }
 
-    pub fn rpc_url(&self) -> &str {
+    pub const fn rpc_url(&self) -> &'static str {
         match self {
             Network::Mainnet | Network::MainnetStaging => MAINNET_RPC_URL,
             Network::Sepolia | Network::SepoliaStaging => SEPOLIA_RPC_URL,

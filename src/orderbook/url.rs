@@ -19,9 +19,9 @@ pub struct OrderApiUrl {
 }
 
 impl OrderApiUrl {
-    pub fn new(base_url: &str) -> Self {
-        let base_url = Url::parse(base_url).expect("Invalid base URL");
-        Self { base_url }
+    pub fn new(base_url: &str) -> Result<Self> {
+        let base_url = Url::parse(base_url).wrap_err("Invalid base URL")?;
+        Ok(Self { base_url })
     }
 
     /// Builds a URL from a path and optional parameters.
