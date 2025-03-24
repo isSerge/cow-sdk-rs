@@ -3,7 +3,7 @@ use serde::Serialize;
 use serde_urlencoded;
 use url::Url;
 
-use crate::orderbook_api::GetTradesQuery;
+use crate::orderbook::GetTradesQuery;
 
 #[derive(Serialize)]
 struct TradesQueryParams {

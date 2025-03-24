@@ -2,7 +2,7 @@ use alloy::primitives::{Address, TxHash, U256};
 use cow_sdk::{
     config::network::Network,
     models::order::CompetitionOrderStatus,
-    orderbook_api::{GetTradesQuery, OrderApiClient},
+    orderbook::{GetTradesQuery, OrderApiClient},
     primitives::{app_data::AppDataHash, order_uid::OrderUid},
 };
 use eyre::Result;
