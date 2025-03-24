@@ -1,7 +1,5 @@
 mod url;
 
-use std::sync::Arc;
-
 use alloy::primitives::{Address, TxHash};
 use eyre::{Error, Result, WrapErr};
 use reqwest::Client as HttpClient;
@@ -24,7 +22,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct OrderApiClient {
-    client: Arc<HttpClient>,
+    client: HttpClient,
     api_url: OrderApiUrl,
 }
 
@@ -35,10 +33,10 @@ pub enum GetTradesQuery {
 }
 
 impl OrderApiClient {
-    pub fn new(network: Network) -> Result<Self, Error> {
+    pub fn new(network: Network) -> Self {
         let api_url = OrderApiUrl::new(network.api_url());
-        let client = Arc::new(HttpClient::new());
-        Ok(Self { client, api_url })
+        let client = HttpClient::new();
+        Self { client, api_url }
     }
 
     /// Gets a resource from the orderbook API and returns the body as a string.
