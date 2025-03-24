@@ -2,7 +2,7 @@ use alloy::{
     primitives::{Address, PrimitiveSignature},
     signers::local::PrivateKeySigner,
 };
-use eyre::{Error, Result};
+use eyre::{Context, Error, Result};
 
 pub struct Signer {
     address: Address,
@@ -10,8 +10,8 @@ pub struct Signer {
 }
 
 impl Signer {
-    pub fn new(private_key: &str) -> Result<Self, Error> {
-        let signer: PrivateKeySigner = private_key.parse().expect("Invalid private key");
+    pub fn new(private_key: &str) -> Result<Self> {
+        let signer: PrivateKeySigner = private_key.parse().wrap_err("Invalid private key")?;
         let address = signer.address();
         Ok(Self { address, signer })
     }
