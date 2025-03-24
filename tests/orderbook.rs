@@ -1,8 +1,10 @@
 use alloy::primitives::{Address, TxHash, U256};
 use cow_sdk::{
     config::network::Network,
-    models::order::{CompetitionOrderStatus, Interactions, Order, OrderStatus},
-    orderbook::{GetTradesQuery, OrderApiClient, OrderCancellations},
+    models::order::{
+        CompetitionOrderStatus, Interactions, Order, OrderCancellations, OrderStatus, PartialOrder,
+    },
+    orderbook::{GetTradesQuery, OrderApiClient},
     primitives::{app_data::AppDataHash, order_uid::OrderUid},
 };
 use eyre::Result;
@@ -247,6 +249,39 @@ async fn test_cancel_order() -> Result<()> {
     let response = client.cancel_order(&cancellations).await;
 
     assert!(response.is_err(), "Expected cancel_order to fail");
+
+    if let Err(err) = response {
+        assert!(err.to_string().contains("HTTP Error 400"));
+    }
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_quote() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let partial_order = PartialOrder {
+        app_data: "0x".to_string(),
+        buy_amount: U256::default(),
+        buy_token: Address::default(),
+        sell_amount: U256::default(),
+        sell_token: Address::default(),
+        receiver: Address::default(),
+        app_data_hash: AppDataHash::default(),
+        sell_token_balance: U256::default(),
+        buy_token_balance: U256::default(),
+        from: Address::default(),
+        price_quality: "0x".to_string(),
+        signing_scheme: "eip712".to_string(),
+        onchain_order: false,
+        kind: "sell".to_string(),
+        sell_amount_before_fees: U256::default(),
+    };
+
+    let response = client.get_quote(&partial_order).await;
+
+    assert!(response.is_err(), "Expected get_quote to fail");
 
     if let Err(err) = response {
         assert!(err.to_string().contains("HTTP Error 400"));

@@ -3,17 +3,16 @@ mod url;
 use alloy::primitives::{Address, TxHash};
 use eyre::{Error, Result, WrapErr};
 use reqwest::Client as HttpClient;
-use serde::Serialize;
 use serde_json::Value;
 use url::OrderApiUrl;
 
 use crate::{
     config::Network,
     models::{
-        order::Order,
+        order::{Order, OrderCancellations, PartialOrder},
         response::{
-            AppDataResponse, CompetitionOrderStatusResponse, SolverCompetitionResponse,
-            TokenPriceResponse, TotalSurplusResponse,
+            AppDataResponse, CompetitionOrderStatusResponse, QuoteResponse,
+            SolverCompetitionResponse, TokenPriceResponse, TotalSurplusResponse,
         },
         trade::Trade,
     },
@@ -31,13 +30,6 @@ pub struct OrderApiClient {
 pub enum GetTradesQuery {
     ByOwner(Address),
     ByOrderId(OrderUid),
-}
-
-#[derive(Debug, Serialize)]
-pub struct OrderCancellations {
-    pub order_ids: Vec<OrderUid>,
-    pub signature: String,
-    pub signing_scheme: String,
 }
 
 impl OrderApiClient {
@@ -148,8 +140,29 @@ impl OrderApiClient {
         Ok(json)
     }
 
-    pub async fn get_quote(&self) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_quote(&self, partial_order: &PartialOrder) -> Result<QuoteResponse, Error> {
+        let url = self.api_url.quote()?;
+        let body =
+            serde_json::to_string(partial_order).wrap_err("Failed to serialize partial order")?;
+
+        let response = self
+            .client
+            .post(url)
+            .header("Content-Type", "application/json")
+            .body(body)
+            .send()
+            .await
+            .wrap_err("Failed to send POST request to URL: {url}")?;
+
+        let status = response.status();
+        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
+
+        if !status.is_success() {
+            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
+        }
+
+        let json: QuoteResponse = parse_response(&body_text)?;
+        Ok(json)
     }
 
     pub async fn get_trades(&self, query: &GetTradesQuery) -> Result<Vec<Trade>, Error> {

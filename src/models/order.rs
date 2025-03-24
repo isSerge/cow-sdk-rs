@@ -2,7 +2,7 @@ use alloy::primitives::{Address, U256};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::primitives::order_uid::OrderUid;
+use crate::primitives::{app_data::AppDataHash, order_uid::OrderUid};
 
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -98,4 +98,32 @@ pub struct QuoteMetadata {
     pub jit_orders: Vec<Value>, // if these are dynamic, you can use serde_json::Value
     pub pre_interactions: Vec<Value>, // likewise here
     pub version: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct OrderCancellations {
+    pub order_ids: Vec<OrderUid>,
+    pub signature: String,
+    pub signing_scheme: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct PartialOrder {
+    pub app_data: String,
+    pub buy_amount: U256,
+    pub buy_token: Address,
+    pub sell_amount: U256,
+    pub sell_token: Address,
+    pub receiver: Address,
+    pub app_data_hash: AppDataHash,
+    pub sell_token_balance: U256,
+    pub buy_token_balance: U256,
+    pub from: Address,
+    pub price_quality: String,
+    pub signing_scheme: String,
+    pub onchain_order: bool,
+    pub kind: String,
+    pub sell_amount_before_fees: U256,
 }
