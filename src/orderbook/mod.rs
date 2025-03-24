@@ -3,6 +3,7 @@ mod url;
 use alloy::primitives::{Address, TxHash};
 use eyre::{Error, Result, WrapErr};
 use reqwest::Client as HttpClient;
+use serde::Serialize;
 use serde_json::Value;
 use url::OrderApiUrl;
 
@@ -30,6 +31,13 @@ pub struct OrderApiClient {
 pub enum GetTradesQuery {
     ByOwner(Address),
     ByOrderId(OrderUid),
+}
+
+#[derive(Debug, Serialize)]
+pub struct OrderCancellations {
+    pub order_ids: Vec<OrderUid>,
+    pub signature: String,
+    pub signing_scheme: String,
 }
 
 impl OrderApiClient {
@@ -104,8 +112,31 @@ impl OrderApiClient {
         Ok(status)
     }
 
-    pub async fn cancel_order(&self, order_id: &OrderUid) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn cancel_order(
+        &self,
+        order_cancellations: &OrderCancellations,
+    ) -> Result<reqwest::StatusCode, Error> {
+        let url = self.api_url.orders()?;
+
+        let body = serde_json::to_string(order_cancellations)
+            .wrap_err("Failed to serialize order cancellations")?;
+
+        let response = self
+            .client
+            .delete(url)
+            .body(body)
+            .send()
+            .await
+            .wrap_err("Failed to send DELETE request to URL: {url}")?;
+
+        let status = response.status();
+        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
+
+        if !status.is_success() {
+            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
+        }
+
+        Ok(status)
     }
 
     pub async fn get_user_orders(&self, address: &Address) -> Result<Vec<Order>, Error> {

@@ -2,7 +2,7 @@ use alloy::primitives::{Address, TxHash, U256};
 use cow_sdk::{
     config::network::Network,
     models::order::{CompetitionOrderStatus, Interactions, Order, OrderStatus},
-    orderbook::{GetTradesQuery, OrderApiClient},
+    orderbook::{GetTradesQuery, OrderApiClient, OrderCancellations},
     primitives::{app_data::AppDataHash, order_uid::OrderUid},
 };
 use eyre::Result;
@@ -231,4 +231,26 @@ async fn test_create_order_with_invalid_order() -> Result<()> {
     Ok(())
 }
 
-// TODO: test create order with valid order using mocked API
+// TODO: test create order with valid order using mocked API (status code 201)
+
+#[tokio::test]
+// #[ignore]
+async fn test_cancel_order() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet);
+    let order_ids: Vec<OrderUid> = vec![ORDER_ID.parse()?];
+    let cancellations = OrderCancellations {
+        order_ids,
+        signature: "0x".to_string(),
+        signing_scheme: "eip712".to_string(),
+    };
+
+    let response = client.cancel_order(&cancellations).await;
+
+    assert!(response.is_err(), "Expected cancel_order to fail");
+
+    if let Err(err) = response {
+        assert!(err.to_string().contains("HTTP Error 400"));
+    }
+
+    Ok(())
+}
