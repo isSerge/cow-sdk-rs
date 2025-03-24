@@ -33,3 +33,9 @@ pub struct SolverCompetitionResponse {
 pub struct TotalSurplusResponse {
     pub total_surplus: U256,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppDataResponse {
+    pub full_app_data: String,
+}

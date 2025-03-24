@@ -3,7 +3,7 @@ use cow_sdk::{
     config::network::Network,
     models::order::CompetitionOrderStatus,
     orderbook_api::{GetTradesQuery, OrderApiClient},
-    primitives::order_uid::OrderUid,
+    primitives::{app_data::AppDataHash, order_uid::OrderUid},
 };
 use eyre::Result;
 
@@ -163,6 +163,20 @@ async fn test_get_total_surplus() -> Result<()> {
     let response = client.get_total_surplus(&address).await?;
 
     assert!(response.total_surplus > U256::from(0));
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_get_app_data() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let app_data_hash: AppDataHash =
+        "0x00e421be3c3b0e20c582c0d803018c418b56ea61add1811bec2509e003a17b42".parse()?;
+
+    let response = client.get_app_data(&app_data_hash).await?;
+
+    assert!(!response.full_app_data.is_empty());
 
     Ok(())
 }

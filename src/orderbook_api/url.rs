@@ -64,10 +64,6 @@ impl OrderApiUrl {
         format!("{}//api/v1/app_data/{}", self.base_url, app_data_hash)
     }
 
-    pub fn app_data(&self) -> String {
-        format!("{}//api/v1/app_data", self.base_url)
-    }
-
     pub fn get_user_surplus(&self, account: &str) -> String {
         format!("{}//api/v1/users/{}/total_surplus", self.base_url, account)
     }

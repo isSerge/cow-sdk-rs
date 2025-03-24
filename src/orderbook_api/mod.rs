@@ -13,13 +13,13 @@ use crate::{
     models::{
         order::Order,
         response::{
-            CompetitionOrderStatusResponse, SolverCompetitionResponse, TokenPriceResponse,
-            TotalSurplusResponse,
+            AppDataResponse, CompetitionOrderStatusResponse, SolverCompetitionResponse,
+            TokenPriceResponse, TotalSurplusResponse,
         },
         trade::Trade,
     },
     parsing::parse_response,
-    primitives::order_uid::OrderUid,
+    primitives::{app_data::AppDataHash, order_uid::OrderUid},
 };
 
 #[derive(Debug)]
@@ -41,8 +41,7 @@ impl OrderApiClient {
         Ok(Self { client, api_url })
     }
 
-    /// Gets a resource from the orderbook API and parses it into the specified
-    /// type.
+    /// Gets a resource from the orderbook API and returns the body as a string.
     async fn get_response_body(&self, url: &str) -> Result<String, Error> {
         let response = self.client.get(url).send().await?;
         let status = response.status();
@@ -172,12 +171,15 @@ impl OrderApiClient {
         Ok(json)
     }
 
-    pub async fn get_total_volume(&self) -> Result<(), Error> {
-        unimplemented!()
-    }
-
-    pub async fn get_app_data(&self) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn get_app_data(
+        &self,
+        app_data_hash: &AppDataHash,
+    ) -> Result<AppDataResponse, Error> {
+        let app_data_hash_str = hex::encode(app_data_hash.0);
+        let url = self.api_url.app_data_by_hash(app_data_hash_str.as_str());
+        let body = self.get_response_body(&url).await?;
+        let json: AppDataResponse = parse_response(&body)?;
+        Ok(json)
     }
 
     pub async fn upload_app_data(&self) -> Result<(), Error> {
