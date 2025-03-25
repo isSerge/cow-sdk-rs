@@ -6,7 +6,7 @@ use cow_sdk::{
     },
     orderbook::{GetTradesQuery, OrderApiClient},
     primitives::{
-        app_data::{AppData, AppDataHash},
+        app_data::{AppData, AppDataHash, FullAppData},
         order_uid::OrderUid,
     },
 };
@@ -297,7 +297,9 @@ async fn test_get_quote() -> Result<()> {
 #[ignore]
 async fn test_upload_app_data() -> Result<()> {
     let client = OrderApiClient::new(Network::Mainnet)?;
-    let app_data = AppData { full_app_data: "0x".to_string() };
+    let app_data = AppData {
+        full_app_data: FullAppData { version: "0.0.1".to_string(), metadata: "0x".to_string() },
+    };
 
     let response = client.upload_app_data(&app_data).await;
 
@@ -314,7 +316,9 @@ async fn test_upload_app_data() -> Result<()> {
 #[ignore]
 async fn test_upload_app_data_by_hash() -> Result<()> {
     let client = OrderApiClient::new(Network::Mainnet)?;
-    let app_data = AppData { full_app_data: "0x".to_string() };
+    let app_data = AppData {
+        full_app_data: FullAppData { version: "0.0.1".to_string(), metadata: "0x".to_string() },
+    };
     let app_data_hash: AppDataHash =
         "0x00e421be3c3b0e20c582c0d803018c418b56ea61add1811bec2509e003a17b42".parse()?;
 

@@ -69,5 +69,12 @@ impl PartialEq<[u8; 32]> for AppDataHash {
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AppData {
-    pub full_app_data: String,
+    pub full_app_data: FullAppData,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FullAppData {
+    pub version: String,
+    pub metadata: String,
 }
