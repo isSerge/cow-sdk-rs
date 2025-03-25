@@ -2,7 +2,8 @@ mod url;
 
 use alloy::primitives::{Address, TxHash};
 use eyre::{Error, Result, WrapErr};
-use reqwest::Client as HttpClient;
+use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
+use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
 use serde_json::Value;
 use url::OrderApiUrl;
 
@@ -25,7 +26,7 @@ use crate::{
 
 #[derive(Debug)]
 pub struct OrderApiClient {
-    client: HttpClient,
+    client: ClientWithMiddleware,
     api_url: OrderApiUrl,
 }
 
@@ -38,7 +39,10 @@ pub enum GetTradesQuery {
 impl OrderApiClient {
     pub fn new(network: Network) -> Result<Self> {
         let api_url = OrderApiUrl::new(network.api_url())?;
-        let client = HttpClient::new();
+        let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
+        let client = ClientBuilder::new(reqwest::Client::new())
+            .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+            .build();
         Ok(Self { client, api_url })
     }
 
@@ -170,6 +174,7 @@ impl OrderApiClient {
 
     pub async fn get_trades(&self, query: &GetTradesQuery) -> Result<Vec<Trade>, Error> {
         let url = self.api_url.get_trades(query)?;
+        println!("url: {}", url);
         let body = self.get_response_body(&url).await?;
         let json: Vec<Trade> = parse_response(&body)?;
         Ok(json)
