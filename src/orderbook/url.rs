@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use eyre::{Result, WrapErr};
 use serde::Serialize;
 use serde_urlencoded;
@@ -5,12 +7,46 @@ use url::Url;
 
 use crate::orderbook::GetTradesQuery;
 
-#[derive(Serialize)]
-struct TradesQueryParams {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    owner: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none", rename = "orderUid")]
-    order_uid: Option<String>,
+#[derive(Debug, Default)]
+struct RequestBuilder {
+    path: String,
+    query_params: HashMap<String, String>,
+}
+
+impl RequestBuilder {
+    pub fn new() -> Self {
+        Self { path: String::new(), query_params: HashMap::new() }
+    }
+
+    pub fn with_path(mut self, path: &str) -> Self {
+        self.path = path.to_string();
+        self
+    }
+
+    pub fn add_query_param(mut self, key: &str, value: &str) -> Self {
+        self.query_params.insert(key.to_string(), value.to_string());
+        self
+    }
+
+    pub fn build(self, base_url: &Url) -> Result<Url> {
+        let mut url = base_url.clone();
+        url.path_segments_mut()
+            .map_err(|_| eyre::eyre!("Cannot modify URL segments"))
+            .wrap_err("Failed to set URL segments")?
+            .extend(self.path.split('/').filter(|s| !s.is_empty()));
+
+        if !self.query_params.is_empty() {
+            let query = Self::serialize_query(&self.query_params)?;
+            url.set_query(Some(&query));
+        }
+
+        Ok(url)
+    }
+
+    /// Serializes the query parameters.
+    fn serialize_query<T: Serialize>(params: &T) -> Result<String, serde_urlencoded::ser::Error> {
+        serde_urlencoded::to_string(params)
+    }
 }
 
 #[derive(Debug)]
@@ -24,42 +60,41 @@ impl OrderApiUrl {
         Ok(Self { base_url })
     }
 
-    /// Builds a URL from a path and optional parameters.
-    fn build<T: Serialize>(&self, path: &str, params: Option<&T>) -> Result<String> {
-        let mut url = self.base_url.clone();
-        url.path_segments_mut()
-            .map_err(|_| eyre::eyre!("Cannot modify URL segments"))
-            .wrap_err("Failed to set URL segments")?
-            .extend(path.split('/').filter(|s| !s.is_empty()));
-
-        if let Some(params) = params {
-            let query = serde_urlencoded::to_string(params)
-                .wrap_err("Failed to serialize query parameters")?;
-            url.set_query(Some(&query));
-        }
+    pub fn orders(&self) -> Result<String> {
+        let url = RequestBuilder::new().with_path("/api/v1/orders").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
-    pub fn orders(&self) -> Result<String> {
-        self.build::<()>("/api/v1/orders", None).wrap_err("Failed to build URL")
-    }
-
     pub fn get_order_by_id(&self, order_id: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/orders/{}", order_id), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/orders/{}", order_id))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_order_status(&self, order_id: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/orders/{}/status", order_id), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/orders/{}/status", order_id))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_order_by_tx_hash(&self, tx_hash: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/transactions/{}/orders", tx_hash), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/transactions/{}/orders", tx_hash))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_trades(&self, query: &GetTradesQuery) -> Result<String> {
+        // Convert our enum into key-value pairs
+        #[derive(Serialize)]
+        struct TradesQueryParams {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            owner: Option<String>,
+            #[serde(skip_serializing_if = "Option::is_none", rename = "orderUid")]
+            order_uid: Option<String>,
+        }
         let params = match query {
             GetTradesQuery::ByOwner(owner) =>
                 TradesQueryParams { owner: Some(owner.to_string()), order_uid: None },
@@ -67,61 +102,88 @@ impl OrderApiUrl {
                 TradesQueryParams { owner: None, order_uid: Some(order_id.to_string()) },
         };
 
-        self.build("/api/v1/trades", Some(&params)).wrap_err("Failed to build URL")
+        let query = RequestBuilder::serialize_query(&params)?;
+
+        let url = RequestBuilder::new()
+            .with_path("/api/v1/trades")
+            .add_query_param("", &query)
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_auction(&self) -> Result<String> {
-        self.build::<()>("/api/v1/auction", None).wrap_err("Failed to build URL")
+        let url = RequestBuilder::new().with_path("/api/v1/auction").build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_user_orders(&self, account: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/account/{account}/orders"), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/account/{account}/orders"))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_native_price(&self, token_address: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/token/{}/native_price", token_address), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/token/{}/native_price", token_address))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn quote(&self) -> Result<String> {
-        self.build::<()>("/api/v1/quote", None).wrap_err("Failed to build URL")
+        let url = RequestBuilder::new().with_path("/api/v1/quote").build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_solver_competition_by_id(&self, auction_id: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/solver_competition/{}", auction_id), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/solver_competition/{}", auction_id))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_solver_competition_by_tx_hash(&self, tx_hash: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/solver_competition/by_tx_hash/{}", tx_hash), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/solver_competition/by_tx_hash/{}", tx_hash))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_solver_competition_latest(&self) -> Result<String> {
-        self.build::<()>("/api/v1/solver_competition/latest", None).wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path("/api/v1/solver_competition/latest")
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_api_version(&self) -> Result<String> {
-        self.build::<()>("/api/v1/version", None).wrap_err("Failed to build URL")
+        let url = RequestBuilder::new().with_path("/api/v1/version").build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn app_data_by_hash(&self, app_data_hash: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/app_data/{}", app_data_hash), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/app_data/{}", app_data_hash))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn put_app_data_by_hash(&self, app_data_hash: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/app_data/{}", app_data_hash), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/app_data/{}", app_data_hash))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn put_app_data(&self) -> Result<String> {
-        self.build::<()>("/api/v1/app_data", None).wrap_err("Failed to build URL")
+        let url = RequestBuilder::new().with_path("/api/v1/app_data").build(&self.base_url)?;
+        Ok(url.to_string())
     }
 
     pub fn get_user_surplus(&self, account: &str) -> Result<String> {
-        self.build::<()>(&format!("/api/v1/users/{}/total_surplus", account), None)
-            .wrap_err("Failed to build URL")
+        let url = RequestBuilder::new()
+            .with_path(&format!("/api/v1/users/{}/total_surplus", account))
+            .build(&self.base_url)?;
+        Ok(url.to_string())
     }
 }
