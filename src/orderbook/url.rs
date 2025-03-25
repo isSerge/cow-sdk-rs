@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use eyre::{Result, WrapErr};
 use serde::Serialize;
 use serde_urlencoded;
@@ -10,12 +8,12 @@ use crate::orderbook::GetTradesQuery;
 #[derive(Debug, Default)]
 struct RequestBuilder {
     path: String,
-    query_params: HashMap<String, String>,
+    query: Option<String>,
 }
 
 impl RequestBuilder {
     pub fn new() -> Self {
-        Self { path: String::new(), query_params: HashMap::new() }
+        Self { path: String::new(), query: None }
     }
 
     pub fn with_path(mut self, path: &str) -> Self {
@@ -23,8 +21,8 @@ impl RequestBuilder {
         self
     }
 
-    pub fn add_query_param(mut self, key: &str, value: &str) -> Self {
-        self.query_params.insert(key.to_string(), value.to_string());
+    pub fn with_query(mut self, query: &str) -> Self {
+        self.query = Some(query.to_string());
         self
     }
 
@@ -35,11 +33,9 @@ impl RequestBuilder {
             .wrap_err("Failed to set URL segments")?
             .extend(self.path.split('/').filter(|s| !s.is_empty()));
 
-        if !self.query_params.is_empty() {
-            let query = Self::serialize_query(&self.query_params)?;
+        if let Some(query) = self.query {
             url.set_query(Some(&query));
         }
-
         Ok(url)
     }
 
@@ -106,7 +102,7 @@ impl OrderApiUrl {
 
         let url = RequestBuilder::new()
             .with_path("/api/v1/trades")
-            .add_query_param("", &query)
+            .with_query(&query)
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
