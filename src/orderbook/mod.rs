@@ -17,7 +17,10 @@ use crate::{
         trade::Trade,
     },
     parsing::parse_response,
-    primitives::{app_data::AppDataHash, order_uid::OrderUid},
+    primitives::{
+        app_data::{AppData, AppDataHash},
+        order_uid::OrderUid,
+    },
 };
 
 #[derive(Debug)]
@@ -88,12 +91,12 @@ impl OrderApiClient {
 
         let response = self
             .client
-            .post(url)
+            .post(url.clone())
             .header("Content-Type", "application/json")
             .body(body)
             .send()
             .await
-            .wrap_err("Failed to send POST request to URL: {url}")?;
+            .wrap_err_with(|| format!("Failed to send POST request to URL: {url}"))?;
 
         let status = response.status();
         let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
@@ -116,12 +119,12 @@ impl OrderApiClient {
 
         let response = self
             .client
-            .delete(url)
+            .delete(url.clone())
             .header("Content-Type", "application/json")
             .body(body)
             .send()
             .await
-            .wrap_err("Failed to send DELETE request to URL: {url}")?;
+            .wrap_err_with(|| format!("Failed to send DELETE request to URL: {url}"))?;
 
         let status = response.status();
         let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
@@ -147,12 +150,12 @@ impl OrderApiClient {
 
         let response = self
             .client
-            .post(url)
+            .post(url.clone())
             .header("Content-Type", "application/json")
             .body(body)
             .send()
             .await
-            .wrap_err("Failed to send POST request to URL: {url}")?;
+            .wrap_err_with(|| format!("Failed to send POST request to URL: {url}"))?;
 
         let status = response.status();
         let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
@@ -245,7 +248,56 @@ impl OrderApiClient {
         Ok(json)
     }
 
-    pub async fn upload_app_data(&self) -> Result<(), Error> {
-        unimplemented!()
+    pub async fn upload_app_data(&self, app_data: &AppData) -> Result<AppDataHash, Error> {
+        let url = self.api_url.put_app_data()?;
+        let body = serde_json::to_string(&app_data).wrap_err("Failed to serialize app data")?;
+
+        let response = self
+            .client
+            .put(url.clone())
+            .header("Content-Type", "application/json")
+            .body(body)
+            .send()
+            .await
+            .wrap_err_with(|| format!("Failed to send PUT request to URL: {url}"))?;
+
+        let status = response.status();
+        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
+
+        if !status.is_success() {
+            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
+        }
+
+        let returned_hash: AppDataHash = parse_response(&body_text)?;
+        Ok(returned_hash)
+    }
+
+    pub async fn upload_app_data_by_hash(
+        &self,
+        app_data_hash: &AppDataHash,
+        app_data: &AppData,
+    ) -> Result<AppDataHash, Error> {
+        let app_data_hash_str = hex::encode(app_data_hash.0);
+        let url = self.api_url.put_app_data_by_hash(app_data_hash_str.as_str())?;
+        let body = serde_json::to_string(&app_data).wrap_err("Failed to serialize app data")?;
+
+        let response = self
+            .client
+            .put(url.clone())
+            .header("Content-Type", "application/json")
+            .body(body)
+            .send()
+            .await
+            .wrap_err_with(|| format!("Failed to send PUT request to URL: {url}"))?;
+
+        let status = response.status();
+        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
+
+        if !status.is_success() {
+            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
+        }
+
+        let returned_hash: AppDataHash = parse_response(&body_text)?;
+        Ok(returned_hash)
     }
 }

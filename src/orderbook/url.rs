@@ -111,6 +111,15 @@ impl OrderApiUrl {
             .wrap_err("Failed to build URL")
     }
 
+    pub fn put_app_data_by_hash(&self, app_data_hash: &str) -> Result<String> {
+        self.build::<()>(&format!("/api/v1/app_data/{}", app_data_hash), None)
+            .wrap_err("Failed to build URL")
+    }
+
+    pub fn put_app_data(&self) -> Result<String> {
+        self.build::<()>("/api/v1/app_data", None).wrap_err("Failed to build URL")
+    }
+
     pub fn get_user_surplus(&self, account: &str) -> Result<String> {
         self.build::<()>(&format!("/api/v1/users/{}/total_surplus", account), None)
             .wrap_err("Failed to build URL")

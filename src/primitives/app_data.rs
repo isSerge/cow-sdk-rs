@@ -65,3 +65,9 @@ impl PartialEq<[u8; 32]> for AppDataHash {
         self.0 == *other
     }
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AppData {
+    pub full_app_data: String,
+}

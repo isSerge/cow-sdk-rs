@@ -5,7 +5,10 @@ use cow_sdk::{
         CompetitionOrderStatus, Interactions, Order, OrderCancellations, OrderStatus, PartialOrder,
     },
     orderbook::{GetTradesQuery, OrderApiClient},
-    primitives::{app_data::AppDataHash, order_uid::OrderUid},
+    primitives::{
+        app_data::{AppData, AppDataHash},
+        order_uid::OrderUid,
+    },
 };
 use eyre::Result;
 
@@ -236,7 +239,7 @@ async fn test_create_order_with_invalid_order() -> Result<()> {
 // TODO: test create order with valid order using mocked API (status code 201)
 
 #[tokio::test]
-// #[ignore]
+#[ignore]
 async fn test_cancel_order() -> Result<()> {
     let client = OrderApiClient::new(Network::Mainnet)?;
     let order_ids: Vec<OrderUid> = vec![ORDER_ID.parse()?];
@@ -282,6 +285,42 @@ async fn test_get_quote() -> Result<()> {
     let response = client.get_quote(&partial_order).await;
 
     assert!(response.is_err(), "Expected get_quote to fail");
+
+    if let Err(err) = response {
+        assert!(err.to_string().contains("HTTP Error 400"));
+    }
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_upload_app_data() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let app_data = AppData { full_app_data: "0x".to_string() };
+
+    let response = client.upload_app_data(&app_data).await;
+
+    assert!(response.is_err(), "Expected upload_app_data to fail");
+
+    if let Err(err) = response {
+        assert!(err.to_string().contains("HTTP Error 400"));
+    }
+
+    Ok(())
+}
+
+#[tokio::test]
+#[ignore]
+async fn test_upload_app_data_by_hash() -> Result<()> {
+    let client = OrderApiClient::new(Network::Mainnet)?;
+    let app_data = AppData { full_app_data: "0x".to_string() };
+    let app_data_hash: AppDataHash =
+        "0x00e421be3c3b0e20c582c0d803018c418b56ea61add1811bec2509e003a17b42".parse()?;
+
+    let response = client.upload_app_data_by_hash(&app_data_hash, &app_data).await;
+
+    assert!(response.is_err(), "Expected upload_app_data_by_hash to fail");
 
     if let Err(err) = response {
         assert!(err.to_string().contains("HTTP Error 400"));
