@@ -5,6 +5,7 @@ use eyre::{Error, Result, WrapErr};
 use reqwest::{Client, Method, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
+use serde::de::DeserializeOwned;
 use serde_json::Value;
 use url::OrderApiUrl;
 
@@ -67,18 +68,31 @@ impl OrderApiClient {
         Ok(response)
     }
 
+    pub async fn handle_response<T: DeserializeOwned>(
+        &self,
+        response: Response,
+    ) -> Result<T, Error> {
+        let status = response.status();
+        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
+
+        if !status.is_success() {
+            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
+        }
+
+        let json: T = parse_response(&body_text)?;
+        Ok(json)
+    }
+
     pub async fn get_order_by_id(&self, order_id: &OrderUid) -> Result<Order, Error> {
         let url = self.api_url.get_order_by_id(order_id.to_string().as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: Order = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_orders_by_tx_hash(&self, tx_hash: &TxHash) -> Result<Vec<Order>, Error> {
         let url = self.api_url.get_order_by_tx_hash(tx_hash.to_string().as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: Vec<Order> = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_order_status(
@@ -87,52 +101,34 @@ impl OrderApiClient {
     ) -> Result<CompetitionOrderStatusResponse, Error> {
         let url = self.api_url.get_order_status(order_id.to_string().as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: CompetitionOrderStatusResponse = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
-    pub async fn create_order(&self, order: &Order) -> Result<reqwest::StatusCode, Error> {
+    pub async fn create_order(&self, order: &Order) -> Result<(), Error> {
         let url = self.api_url.orders()?;
         let body = serde_json::to_string(order).wrap_err("Failed to serialize order")?;
 
         let response = self.send_request(&url, Method::POST, Some(body)).await?;
-
-        let status = response.status();
-        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
-
-        if !status.is_success() {
-            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
-        }
-
-        Ok(status)
+        self.handle_response(response).await
     }
 
     pub async fn cancel_order(
         &self,
         order_cancellations: &OrderCancellations,
-    ) -> Result<reqwest::StatusCode, Error> {
+    ) -> Result<(), Error> {
         let url = self.api_url.orders()?;
 
         let body = serde_json::to_string(order_cancellations)
             .wrap_err("Failed to serialize order cancellations")?;
 
         let response = self.send_request(&url, Method::DELETE, Some(body)).await?;
-
-        let status = response.status();
-        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
-
-        if !status.is_success() {
-            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
-        }
-
-        Ok(status)
+        self.handle_response(response).await
     }
 
     pub async fn get_user_orders(&self, address: &Address) -> Result<Vec<Order>, Error> {
         let url = self.api_url.get_user_orders(address.to_string().as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: Vec<Order> = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_quote(&self, partial_order: &PartialOrder) -> Result<QuoteResponse, Error> {
@@ -141,23 +137,13 @@ impl OrderApiClient {
             serde_json::to_string(partial_order).wrap_err("Failed to serialize partial order")?;
 
         let response = self.send_request(&url, Method::POST, Some(body)).await?;
-
-        let status = response.status();
-        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
-
-        if !status.is_success() {
-            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
-        }
-
-        let json: QuoteResponse = parse_response(&body_text)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_trades(&self, query: &GetTradesQuery) -> Result<Vec<Trade>, Error> {
         let url = self.api_url.get_trades(query)?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: Vec<Trade> = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     /// Permissioned endpoint.
@@ -165,8 +151,7 @@ impl OrderApiClient {
     pub async fn get_auction(&self) -> Result<Value, Error> {
         let url = self.api_url.get_auction()?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: Value = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_competition_by_id(
@@ -175,8 +160,7 @@ impl OrderApiClient {
     ) -> Result<SolverCompetitionResponse, Error> {
         let url = self.api_url.get_solver_competition_by_id(auction_id.to_string().as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: SolverCompetitionResponse = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_competition_by_tx_hash(
@@ -185,15 +169,13 @@ impl OrderApiClient {
     ) -> Result<SolverCompetitionResponse, Error> {
         let url = self.api_url.get_solver_competition_by_tx_hash(tx_hash.to_string().as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: SolverCompetitionResponse = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_latest_competition(&self) -> Result<SolverCompetitionResponse, Error> {
         let url = self.api_url.get_solver_competition_latest()?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: SolverCompetitionResponse = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_token_price(
@@ -202,15 +184,14 @@ impl OrderApiClient {
     ) -> Result<TokenPriceResponse, Error> {
         let url = self.api_url.get_native_price(token_address.to_string().as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: TokenPriceResponse = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_version(&self) -> Result<String, Error> {
         let url = self.api_url.get_api_version()?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let body = response.text().await.wrap_err("Failed to extract response body text")?;
-        Ok(body)
+
+        Ok(response.text().await?)
     }
 
     pub async fn get_total_surplus(
@@ -219,8 +200,7 @@ impl OrderApiClient {
     ) -> Result<TotalSurplusResponse, Error> {
         let url = self.api_url.get_user_surplus(address.to_string().as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: TotalSurplusResponse = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn get_app_data(
@@ -230,8 +210,7 @@ impl OrderApiClient {
         let app_data_hash_str = hex::encode(app_data_hash.0);
         let url = self.api_url.app_data_by_hash(app_data_hash_str.as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
-        let json: AppDataResponse = parse_response(&response.text().await?)?;
-        Ok(json)
+        self.handle_response(response).await
     }
 
     pub async fn upload_app_data(&self, app_data: &AppData) -> Result<AppDataHash, Error> {
@@ -240,15 +219,7 @@ impl OrderApiClient {
 
         let response = self.send_request(&url, Method::PUT, Some(body)).await?;
 
-        let status = response.status();
-        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
-
-        if !status.is_success() {
-            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
-        }
-
-        let returned_hash: AppDataHash = parse_response(&body_text)?;
-        Ok(returned_hash)
+        self.handle_response(response).await
     }
 
     pub async fn upload_app_data_by_hash(
@@ -262,14 +233,6 @@ impl OrderApiClient {
 
         let response = self.send_request(&url, Method::PUT, Some(body)).await?;
 
-        let status = response.status();
-        let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
-
-        if !status.is_success() {
-            return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
-        }
-
-        let returned_hash: AppDataHash = parse_response(&body_text)?;
-        Ok(returned_hash)
+        self.handle_response(response).await
     }
 }
