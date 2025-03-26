@@ -162,13 +162,6 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
-    pub fn put_app_data_by_hash(&self, app_data_hash: &str) -> Result<String> {
-        let url = RequestBuilder::new()
-            .path(&format!("/api/v1/app_data/{}", app_data_hash))
-            .build(&self.base_url)?;
-        Ok(url.to_string())
-    }
-
     pub fn put_app_data(&self) -> Result<String> {
         let url = RequestBuilder::new().path("/api/v1/app_data").build(&self.base_url)?;
         Ok(url.to_string())
@@ -179,5 +172,163 @@ impl OrderApiUrl {
             .path(&format!("/api/v1/users/{}/total_surplus", account))
             .build(&self.base_url)?;
         Ok(url.to_string())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use alloy::primitives::Address;
+
+    use super::*;
+    use crate::orderbook::{AppDataHash, OrderUid};
+
+    const ORDER_ID: &str = "0xeaef82ff8696bff255e130b266231acb53a8f02823ed89b33acda5fd3987a53ad8da6bf26964af9d7eed9e03e53415d37aa96045676d56da";
+    const TX_HASH: &str = "0xffd92faa1419c59ff0ac7f090998e9159f4b7f28bf67ad6b061c728c0da265f2";
+    const ACCOUNT: &str = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045";
+    const BASE_URL: &str = "https://api.cow.fi/mainnet";
+    const TOKEN_ADDRESS: &str = "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48";
+
+    #[test]
+    fn test_request_builder_can_add_path() {
+        let base_url = Url::parse(BASE_URL).unwrap();
+        let url = RequestBuilder::new().path("/api/v1/orders").build(&base_url);
+
+        assert_eq!(url.unwrap().to_string(), "https://api.cow.fi/mainnet/api/v1/orders");
+    }
+
+    #[test]
+    fn test_request_builder_can_add_query_params() {
+        let base_url = Url::parse(BASE_URL).unwrap();
+        let url = RequestBuilder::new()
+            .path("/api/v1/orders")
+            .query(&format!("owner={}", ACCOUNT))
+            .build(&base_url);
+
+        assert_eq!(
+            url.unwrap().to_string(),
+            "https://api.cow.fi/mainnet/api/v1/orders?owner=0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
+        );
+    }
+
+    #[test]
+    #[should_panic(expected = "Cannot modify URL segments")]
+    fn test_request_builder_invalid_base_url() {
+        // URLs with non-hierarchical schemes (like "data:") cannot have their path
+        // segments modified.
+        let base_url = Url::parse("data:,").unwrap();
+        RequestBuilder::new().path("/api/v1/orders").build(&base_url).unwrap();
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_order_by_id() {
+        let url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = url.get_order_by_id(ORDER_ID);
+        assert_eq!(url.unwrap().to_string(), "https://api.cow.fi/mainnet/api/v1/orders/0xeaef82ff8696bff255e130b266231acb53a8f02823ed89b33acda5fd3987a53ad8da6bf26964af9d7eed9e03e53415d37aa96045676d56da");
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_order_status() {
+        let url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = url.get_order_status(ORDER_ID);
+        assert_eq!(url.unwrap().to_string(), "https://api.cow.fi/mainnet/api/v1/orders/0xeaef82ff8696bff255e130b266231acb53a8f02823ed89b33acda5fd3987a53ad8da6bf26964af9d7eed9e03e53415d37aa96045676d56da/status");
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_order_by_tx_hash() {
+        let url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = url.get_order_by_tx_hash(TX_HASH);
+        assert_eq!(
+            url.unwrap().to_string(),
+            "https://api.cow.fi/mainnet/api/v1/transactions/0xffd92faa1419c59ff0ac7f090998e9159f4b7f28bf67ad6b061c728c0da265f2/orders"
+        );
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_trades_by_owner() {
+        let address: Address = ACCOUNT.parse().unwrap();
+        let url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = url.get_trades(&GetTradesQuery::ByOwner(address));
+        assert_eq!(
+            url.unwrap().to_string().to_lowercase(),
+            "https://api.cow.fi/mainnet/api/v1/trades?owner=0xd8da6bf26964af9d7eed9e03e53415d37aa96045"
+        );
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_trades_by_order_id() {
+        let order_uid: OrderUid = ORDER_ID.parse().unwrap();
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = api_url.get_trades(&GetTradesQuery::ByOrderId(order_uid));
+
+        assert_eq!(
+            url.unwrap().to_string(),
+            "https://api.cow.fi/mainnet/api/v1/trades?orderUid=0xeaef82ff8696bff255e130b266231acb53a8f02823ed89b33acda5fd3987a53ad8da6bf26964af9d7eed9e03e53415d37aa96045676d56da"
+        );
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_user_orders() {
+        let address: Address = ACCOUNT.parse().unwrap();
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = api_url.get_user_orders(&address.to_string());
+        assert_eq!(url.unwrap().to_string().to_lowercase(), "https://api.cow.fi/mainnet/api/v1/account/0xd8da6bf26964af9d7eed9e03e53415d37aa96045/orders");
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_native_price() {
+        let token_address: Address = TOKEN_ADDRESS.parse().unwrap();
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = api_url.get_native_price(&token_address.to_string());
+        assert_eq!(url.unwrap().to_string().to_lowercase(), "https://api.cow.fi/mainnet/api/v1/token/0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48/native_price");
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_solver_competition_by_id() {
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = api_url.get_solver_competition_by_id("1");
+        assert_eq!(
+            url.unwrap().to_string().to_lowercase(),
+            "https://api.cow.fi/mainnet/api/v1/solver_competition/1"
+        );
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_solver_competition_by_tx_hash() {
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = api_url.get_solver_competition_by_tx_hash(TX_HASH);
+        assert_eq!(url.unwrap().to_string().to_lowercase(), "https://api.cow.fi/mainnet/api/v1/solver_competition/by_tx_hash/0xffd92faa1419c59ff0ac7f090998e9159f4b7f28bf67ad6b061c728c0da265f2");
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_solver_competition_latest() {
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = api_url.get_solver_competition_latest();
+        assert_eq!(
+            url.unwrap().to_string().to_lowercase(),
+            "https://api.cow.fi/mainnet/api/v1/solver_competition/latest"
+        );
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_api_version() {
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = api_url.get_api_version();
+        assert_eq!(
+            url.unwrap().to_string().to_lowercase(),
+            "https://api.cow.fi/mainnet/api/v1/version"
+        );
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_app_data_by_hash() {
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+
+        let app_data_hash: AppDataHash =
+            "0x00e421be3c3b0e20c582c0d803018c418b56ea61add1811bec2509e003a17b42".parse().unwrap();
+        let url = api_url.app_data_by_hash(&app_data_hash.to_string());
+        assert_eq!(
+            url.unwrap().to_string().to_lowercase(),
+            "https://api.cow.fi/mainnet/api/v1/app_data/0x00e421be3c3b0e20c582c0d803018c418b56ea61add1811bec2509e003a17b42"
+        );
     }
 }

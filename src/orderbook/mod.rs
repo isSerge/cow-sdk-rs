@@ -207,7 +207,7 @@ impl OrderApiClient {
         &self,
         app_data_hash: &AppDataHash,
     ) -> Result<AppDataResponse, Error> {
-        let app_data_hash_str = hex::encode(app_data_hash.0);
+        let app_data_hash_str = app_data_hash.to_string();
         let url = self.api_url.app_data_by_hash(app_data_hash_str.as_str())?;
         let response = self.send_request(&url, Method::GET, None).await?;
         self.handle_response(response).await
@@ -227,8 +227,8 @@ impl OrderApiClient {
         app_data_hash: &AppDataHash,
         app_data: &AppData,
     ) -> Result<AppDataHash, Error> {
-        let app_data_hash_str = hex::encode(app_data_hash.0);
-        let url = self.api_url.put_app_data_by_hash(app_data_hash_str.as_str())?;
+        let app_data_hash_str = app_data_hash.to_string();
+        let url = self.api_url.app_data_by_hash(app_data_hash_str.as_str())?;
         let body = serde_json::to_string(&app_data).wrap_err("Failed to serialize app data")?;
 
         let response = self.send_request(&url, Method::PUT, Some(body)).await?;

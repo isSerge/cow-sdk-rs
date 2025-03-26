@@ -1,7 +1,7 @@
 use std::{
     borrow::Cow,
     fmt,
-    fmt::{Debug, Formatter},
+    fmt::{Debug, Display, Formatter},
     str::FromStr,
 };
 
@@ -29,6 +29,12 @@ impl FromStr for AppDataHash {
         let mut bytes = [0u8; 32];
         hex::decode_to_slice(s.strip_prefix("0x").unwrap_or(s), &mut bytes)?;
         Ok(Self(bytes))
+    }
+}
+
+impl Display for AppDataHash {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "0x{}", hex::encode(self.0))
     }
 }
 
