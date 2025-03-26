@@ -2,6 +2,7 @@ mod url;
 
 use alloy::primitives::{Address, TxHash};
 use eyre::{Error, Result, WrapErr};
+use log::{debug, error, info, trace};
 use reqwest::{Client, Method, Response};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
 use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
@@ -19,7 +20,7 @@ use crate::{
         },
         trade::Trade,
     },
-    parsing::parse_response,
+    parsing::parse_response_body,
     primitives::{
         app_data::{AppData, AppDataHash},
         order_uid::OrderUid,
@@ -40,6 +41,7 @@ pub enum GetTradesQuery {
 
 impl OrderApiClient {
     pub fn new(network: Network) -> Result<Self> {
+        info!("Creating new OrderApiClient for network: {:?}", network);
         let api_url = OrderApiUrl::new(network.api_url())?;
         let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
         let client = ClientBuilder::new(Client::new())
@@ -54,9 +56,11 @@ impl OrderApiClient {
         method: Method,
         body: Option<String>,
     ) -> Result<Response, Error> {
+        trace!("Sending request to {} with method {}", url, method);
         let mut request = self.client.request(method, url);
 
         if let Some(body) = body {
+            debug!("Request body: {}", body);
             request = request.header("Content-Type", "application/json").body(body);
         }
 
@@ -65,6 +69,7 @@ impl OrderApiClient {
             .await
             .wrap_err_with(|| format!("Failed to send request to URL: {url}"))?;
 
+        debug!("Received response: {:?}", response.status());
         Ok(response)
     }
 
@@ -76,10 +81,12 @@ impl OrderApiClient {
         let body_text = response.text().await.wrap_err("Failed to extract response body text")?;
 
         if !status.is_success() {
+            error!("HTTP Error {}: {}", status, body_text);
             return Err(eyre::eyre!("HTTP Error {}: {}", status, body_text));
         }
 
-        let json: T = parse_response(&body_text)?;
+        trace!("Response body: {}", body_text);
+        let json: T = parse_response_body(&body_text)?;
         Ok(json)
     }
 

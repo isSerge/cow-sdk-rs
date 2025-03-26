@@ -1,5 +1,6 @@
 use std::{fmt, str};
 
+use log::{debug, warn};
 use serde::{Deserialize, Serialize};
 
 // Orderbook API URLs
@@ -73,6 +74,7 @@ impl str::FromStr for Network {
     type Err = String;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        debug!("Parsing network from string: {}", s);
         match s {
             "mainnet" => Ok(Network::Mainnet),
             "mainnet-staging" => Ok(Network::MainnetStaging),
@@ -85,7 +87,10 @@ impl str::FromStr for Network {
             "gnosis" => Ok(Network::Gnosis),
             "gnosis-staging" => Ok(Network::GnosisStaging),
             "local" => Ok(Network::Local),
-            _ => Err(format!("Network not found: {}", s)),
+            _ => {
+                warn!("Network not found: {}", s);
+                Err(format!("Network not found: {}", s))
+            }
         }
     }
 }

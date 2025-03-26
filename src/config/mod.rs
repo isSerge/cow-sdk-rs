@@ -10,18 +10,11 @@ pub use network::Network;
 pub struct Config {
     #[serde_as(as = "DisplayFromStr")]
     pub network: Network,
-    // pub eth_address: String,
-    // pub private_key: String,
 }
 
 impl Config {
     pub fn new(network: Network) -> Self {
-        Config {
-            network,
-            // eth_address: "0x0000000000000000000000000000000000000000".to_string(),
-            // private_key: "0x0000000000000000000000000000000000000000000000000000000000000000"
-            //     .to_string(),
-        }
+        Config { network }
     }
 
     pub fn rpc_url(&self) -> String {
