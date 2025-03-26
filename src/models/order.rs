@@ -41,7 +41,7 @@ pub struct Order {
     pub valid_to: u64,
 }
 
-#[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum CompetitionOrderStatus {
     Cancelled,
@@ -51,6 +51,23 @@ pub enum CompetitionOrderStatus {
     Solved,
     Executing,
     Traded,
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SolutionInclusion {
+    /// The name or identifier of the solver.
+    pub solver: String,
+    /// The executed amounts for the order as proposed by the solver, included
+    /// if the solution was for the desired order, or omitted otherwise.
+    pub executed_amounts: Option<ExecutedAmounts>,
+}
+
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct ExecutedAmounts {
+    pub sell: U256,
+    pub buy: U256,
 }
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]

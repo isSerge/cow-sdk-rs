@@ -2,12 +2,12 @@ use alloy::primitives::{Address, TxHash, U256};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::models::order::CompetitionOrderStatus;
+use crate::models::order::{CompetitionOrderStatus, SolutionInclusion};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CompetitionOrderStatusResponse {
     pub r#type: CompetitionOrderStatus,
-    pub value: Value,
+    pub value: Vec<SolutionInclusion>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
