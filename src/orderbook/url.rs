@@ -5,6 +5,7 @@ use url::Url;
 
 use crate::orderbook::GetTradesQuery;
 
+/// Builds a URL with a path and query parameters.
 #[derive(Debug, Default)]
 struct RequestBuilder {
     path: String,
@@ -16,11 +17,13 @@ impl RequestBuilder {
         Self { path: String::new(), query: None }
     }
 
+    /// Adds a path to the URL.
     pub fn path(mut self, path: &str) -> Self {
         self.path = path.to_string();
         self
     }
 
+    /// Adds query parameters to the URL.
     pub fn query(mut self, query: &str) -> Self {
         if !query.is_empty() {
             self.query = Some(query.to_string());
@@ -28,6 +31,7 @@ impl RequestBuilder {
         self
     }
 
+    /// Builds the URL.
     pub fn build(self, base_url: &Url) -> Result<Url> {
         let mut url = base_url.clone();
         url.path_segments_mut()
@@ -47,6 +51,7 @@ impl RequestBuilder {
     }
 }
 
+/// Gets Order API endpoints.
 #[derive(Debug)]
 pub struct OrderApiUrl {
     base_url: Url,
@@ -58,11 +63,13 @@ impl OrderApiUrl {
         Ok(Self { base_url })
     }
 
+    /// Endpoint to create and delete orders
     pub fn orders(&self) -> Result<String> {
         let url = RequestBuilder::new().path("/api/v1/orders").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
+    /// Endpoint to get an order by its ID
     pub fn get_order_by_id(&self, order_id: &str) -> Result<String> {
         let url = RequestBuilder::new()
             .path(&format!("/api/v1/orders/{}", order_id))
@@ -70,6 +77,7 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to get the status of an order
     pub fn get_order_status(&self, order_id: &str) -> Result<String> {
         let url = RequestBuilder::new()
             .path(&format!("/api/v1/orders/{}/status", order_id))
@@ -77,6 +85,7 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to get orders by transaction hash
     pub fn get_order_by_tx_hash(&self, tx_hash: &str) -> Result<String> {
         let url = RequestBuilder::new()
             .path(&format!("/api/v1/transactions/{}/orders", tx_hash))
@@ -84,6 +93,7 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to get trades by owner or order ID
     pub fn get_trades(&self, query: &GetTradesQuery) -> Result<String> {
         // Convert our enum into key-value pairs
         #[derive(Serialize)]
@@ -107,11 +117,13 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to get the current batch auction
     pub fn get_auction(&self) -> Result<String> {
         let url = RequestBuilder::new().path("/api/v1/auction").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
+    /// Endpoint to get orders by account
     pub fn get_user_orders(
         &self,
         account: &str,
@@ -131,6 +143,7 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to get the native price of a token
     pub fn get_native_price(&self, token_address: &str) -> Result<String> {
         let url = RequestBuilder::new()
             .path(&format!("/api/v1/token/{}/native_price", token_address))
@@ -138,11 +151,13 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to get a quote for an order
     pub fn quote(&self) -> Result<String> {
         let url = RequestBuilder::new().path("/api/v1/quote").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
+    /// Endpoint to get a solver competition by ID
     pub fn get_solver_competition_by_id(&self, auction_id: &str) -> Result<String> {
         let url = RequestBuilder::new()
             .path(&format!("/api/v1/solver_competition/{}", auction_id))
@@ -150,6 +165,7 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to get a solver competition by transaction hash
     pub fn get_solver_competition_by_tx_hash(&self, tx_hash: &str) -> Result<String> {
         let url = RequestBuilder::new()
             .path(&format!("/api/v1/solver_competition/by_tx_hash/{}", tx_hash))
@@ -157,6 +173,7 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to get the latest solver competition
     pub fn get_solver_competition_latest(&self) -> Result<String> {
         let url = RequestBuilder::new()
             .path("/api/v1/solver_competition/latest")
@@ -164,11 +181,13 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to get the API version
     pub fn get_api_version(&self) -> Result<String> {
         let url = RequestBuilder::new().path("/api/v1/version").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
+    /// Endpoint to register app data with a hash
     pub fn app_data_by_hash(&self, app_data_hash: &str) -> Result<String> {
         let url = RequestBuilder::new()
             .path(&format!("/api/v1/app_data/{}", app_data_hash))
@@ -176,11 +195,13 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
+    /// Endpoint to register app data with a hash
     pub fn put_app_data(&self) -> Result<String> {
         let url = RequestBuilder::new().path("/api/v1/app_data").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
+    /// Endpoint to get the total surplus of a user [UNSTABLE]
     pub fn get_user_surplus(&self, account: &str) -> Result<String> {
         let url = RequestBuilder::new()
             .path(&format!("/api/v1/users/{}/total_surplus", account))
