@@ -1,4 +1,5 @@
 use alloy::primitives::{Address, TxHash, U256};
+use chrono::Utc;
 use cow_sdk::{
     config::network::Network,
     models::order::{
@@ -197,7 +198,7 @@ async fn test_create_order_with_invalid_order() -> Result<()> {
         buy_token: Address::default(),
         buy_token_balance: "erc20".to_string(),
         class: "limit".to_string(),
-        creation_date: "2025-03-16T00:00:00Z".to_string(),
+        creation_date: Utc::now(),
         executed_buy_amount: U256::default(),
         executed_fee: U256::default(),
         executed_fee_amount: U256::default(),
