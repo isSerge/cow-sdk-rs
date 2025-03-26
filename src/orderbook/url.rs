@@ -16,12 +16,12 @@ impl RequestBuilder {
         Self { path: String::new(), query: None }
     }
 
-    pub fn with_path(mut self, path: &str) -> Self {
+    pub fn path(mut self, path: &str) -> Self {
         self.path = path.to_string();
         self
     }
 
-    pub fn with_query(mut self, query: &str) -> Self {
+    pub fn query(mut self, query: &str) -> Self {
         self.query = Some(query.to_string());
         self
     }
@@ -57,27 +57,27 @@ impl OrderApiUrl {
     }
 
     pub fn orders(&self) -> Result<String> {
-        let url = RequestBuilder::new().with_path("/api/v1/orders").build(&self.base_url)?;
+        let url = RequestBuilder::new().path("/api/v1/orders").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_order_by_id(&self, order_id: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/orders/{}", order_id))
+            .path(&format!("/api/v1/orders/{}", order_id))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_order_status(&self, order_id: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/orders/{}/status", order_id))
+            .path(&format!("/api/v1/orders/{}/status", order_id))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_order_by_tx_hash(&self, tx_hash: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/transactions/{}/orders", tx_hash))
+            .path(&format!("/api/v1/transactions/{}/orders", tx_hash))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
@@ -100,85 +100,83 @@ impl OrderApiUrl {
 
         let query = RequestBuilder::serialize_query(&params)?;
 
-        let url = RequestBuilder::new()
-            .with_path("/api/v1/trades")
-            .with_query(&query)
-            .build(&self.base_url)?;
+        let url =
+            RequestBuilder::new().path("/api/v1/trades").query(&query).build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_auction(&self) -> Result<String> {
-        let url = RequestBuilder::new().with_path("/api/v1/auction").build(&self.base_url)?;
+        let url = RequestBuilder::new().path("/api/v1/auction").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_user_orders(&self, account: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/account/{account}/orders"))
+            .path(&format!("/api/v1/account/{account}/orders"))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_native_price(&self, token_address: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/token/{}/native_price", token_address))
+            .path(&format!("/api/v1/token/{}/native_price", token_address))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn quote(&self) -> Result<String> {
-        let url = RequestBuilder::new().with_path("/api/v1/quote").build(&self.base_url)?;
+        let url = RequestBuilder::new().path("/api/v1/quote").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_solver_competition_by_id(&self, auction_id: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/solver_competition/{}", auction_id))
+            .path(&format!("/api/v1/solver_competition/{}", auction_id))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_solver_competition_by_tx_hash(&self, tx_hash: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/solver_competition/by_tx_hash/{}", tx_hash))
+            .path(&format!("/api/v1/solver_competition/by_tx_hash/{}", tx_hash))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_solver_competition_latest(&self) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path("/api/v1/solver_competition/latest")
+            .path("/api/v1/solver_competition/latest")
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_api_version(&self) -> Result<String> {
-        let url = RequestBuilder::new().with_path("/api/v1/version").build(&self.base_url)?;
+        let url = RequestBuilder::new().path("/api/v1/version").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn app_data_by_hash(&self, app_data_hash: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/app_data/{}", app_data_hash))
+            .path(&format!("/api/v1/app_data/{}", app_data_hash))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn put_app_data_by_hash(&self, app_data_hash: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/app_data/{}", app_data_hash))
+            .path(&format!("/api/v1/app_data/{}", app_data_hash))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn put_app_data(&self) -> Result<String> {
-        let url = RequestBuilder::new().with_path("/api/v1/app_data").build(&self.base_url)?;
+        let url = RequestBuilder::new().path("/api/v1/app_data").build(&self.base_url)?;
         Ok(url.to_string())
     }
 
     pub fn get_user_surplus(&self, account: &str) -> Result<String> {
         let url = RequestBuilder::new()
-            .with_path(&format!("/api/v1/users/{}/total_surplus", account))
+            .path(&format!("/api/v1/users/{}/total_surplus", account))
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
