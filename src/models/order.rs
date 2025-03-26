@@ -1,4 +1,5 @@
 use alloy::primitives::{Address, U256};
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -13,7 +14,7 @@ pub struct Order {
     pub buy_token: Address,
     pub buy_token_balance: String,
     pub class: String,
-    pub creation_date: String, // TODO: change this to a DateTime type (e.g. chrono::DateTime)
+    pub creation_date: DateTime<Utc>,
     pub executed_buy_amount: U256,
     pub executed_fee: U256,
     pub executed_fee_amount: U256,
