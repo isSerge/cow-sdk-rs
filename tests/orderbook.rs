@@ -60,10 +60,12 @@ async fn test_get_order_status_by_id() -> Result<()> {
 async fn test_get_user_orders() -> Result<()> {
     let client = OrderApiClient::new(Network::Mainnet)?;
     let address: Address = "0xd8da6bf26964af9d7eed9e03e53415d37aa96045".parse()?;
+    let offset = 1;
+    let limit = 1;
 
-    let response = client.get_user_orders(&address).await?;
+    let response = client.get_user_orders(&address, Some(offset), Some(limit)).await?;
 
-    assert_eq!(response.len(), 10);
+    assert_eq!(response.len(), 1);
 
     Ok(())
 }

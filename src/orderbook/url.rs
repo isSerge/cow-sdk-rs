@@ -22,7 +22,9 @@ impl RequestBuilder {
     }
 
     pub fn query(mut self, query: &str) -> Self {
-        self.query = Some(query.to_string());
+        if !query.is_empty() {
+            self.query = Some(query.to_string());
+        }
         self
     }
 
@@ -110,9 +112,21 @@ impl OrderApiUrl {
         Ok(url.to_string())
     }
 
-    pub fn get_user_orders(&self, account: &str) -> Result<String> {
+    pub fn get_user_orders(
+        &self,
+        account: &str,
+        offset: Option<u32>,
+        limit: Option<u32>,
+    ) -> Result<String> {
+        let query = match (offset, limit) {
+            (Some(offset), Some(limit)) => format!("offset={}&limit={}", offset, limit),
+            (Some(offset), None) => format!("offset={}", offset),
+            (None, Some(limit)) => format!("limit={}", limit),
+            (None, None) => String::new(),
+        };
         let url = RequestBuilder::new()
             .path(&format!("/api/v1/account/{account}/orders"))
+            .query(&query)
             .build(&self.base_url)?;
         Ok(url.to_string())
     }
@@ -270,8 +284,24 @@ mod tests {
     fn test_order_api_url_can_build_get_user_orders() {
         let address: Address = ACCOUNT.parse().unwrap();
         let api_url = OrderApiUrl::new(BASE_URL).unwrap();
-        let url = api_url.get_user_orders(&address.to_string());
+        let url = api_url.get_user_orders(&address.to_string(), None, None);
         assert_eq!(url.unwrap().to_string().to_lowercase(), "https://api.cow.fi/mainnet/api/v1/account/0xd8da6bf26964af9d7eed9e03e53415d37aa96045/orders");
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_user_orders_with_offset() {
+        let address: Address = ACCOUNT.parse().unwrap();
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = api_url.get_user_orders(&address.to_string(), Some(10), None);
+        assert_eq!(url.unwrap().to_string().to_lowercase(), "https://api.cow.fi/mainnet/api/v1/account/0xd8da6bf26964af9d7eed9e03e53415d37aa96045/orders?offset=10");
+    }
+
+    #[test]
+    fn test_order_api_url_can_build_get_user_orders_with_limit() {
+        let address: Address = ACCOUNT.parse().unwrap();
+        let api_url = OrderApiUrl::new(BASE_URL).unwrap();
+        let url = api_url.get_user_orders(&address.to_string(), None, Some(10));
+        assert_eq!(url.unwrap().to_string().to_lowercase(), "https://api.cow.fi/mainnet/api/v1/account/0xd8da6bf26964af9d7eed9e03e53415d37aa96045/orders?limit=10");
     }
 
     #[test]

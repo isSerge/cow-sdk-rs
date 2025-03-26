@@ -132,8 +132,13 @@ impl OrderApiClient {
         self.handle_response(response).await
     }
 
-    pub async fn get_user_orders(&self, address: &Address) -> Result<Vec<Order>, Error> {
-        let url = self.api_url.get_user_orders(address.to_string().as_str())?;
+    pub async fn get_user_orders(
+        &self,
+        address: &Address,
+        offset: Option<u32>,
+        limit: Option<u32>,
+    ) -> Result<Vec<Order>, Error> {
+        let url = self.api_url.get_user_orders(address.to_string().as_str(), offset, limit)?;
         let response = self.send_request(&url, Method::GET, None).await?;
         self.handle_response(response).await
     }
